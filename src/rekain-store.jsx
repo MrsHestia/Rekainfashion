@@ -1,453 +1,564 @@
-import { useState, useEffect } from "react";
-
-/* ─── CONFIG — ganti sesuai data kamu ─── */
-const WA_NUMBER = "6289529178826"; // Ganti dengan no WA bisnis kamu
-const VA_ACCOUNTS = [
-  { bank: "BCA",     logo: "🏦", va: "1234567890",    name: "ReKain Fashion" },
-  { bank: "Mandiri", logo: "🏛️", va: "9087654321001", name: "ReKain Fashion" },
-  { bank: "BRI",     logo: "🌿", va: "0088776655443", name: "ReKain Fashion" },
-];
-
-/* ─── TRANSLATIONS ─── */
-const COPY = {
-  id: {
-    tagline: "Esensial Tanpa Batas Waktu, Untuk Semua Usia",
-    heroTitle1: "Berpakaian", heroTitle2: "dengan jiwa.",
-    heroDesc: "Koleksi pakaian minimalis berkualitas — dari bayi hingga dewasa. Dibuat dengan bahan pilihan, dirancang untuk kenyamanan sehari-hari.",
-    shopNow: "BELANJA SEKARANG", lookbook: "LIHAT LOOKBOOK",
-    nav: ["Koleksi", "Tentang", "Kontak"],
-    cats: ["Semua", "Dewasa", "Anak-anak", "Bayi"],
-    featNew: "Baru", featBest: "Terlaris",
-    viewDetail: "LIHAT DETAIL", pickColor: "Pilih Warna", addCart: "TAMBAH KE KERANJANG",
-    cart: "Keranjang", emptyCart: "Keranjang masih kosong.", subtotal: "Subtotal",
-    toCheckout: "LANJUT KE CHECKOUT", shipping: "Pengiriman", negotiate: "Dihitung saat konfirmasi",
-    shippingDetail: "Detail Pengiriman", back: "← Kembali",
-    fullName: "Nama Lengkap *", waNumber: "No. WhatsApp *", address: "Alamat Lengkap *", notes: "Catatan (opsional)",
-    placeholderAddress: "Jl. ..., Kec., Kota", placeholderNotes: "Ukuran, warna, dll.",
-    payMethod: "Metode Pembayaran", payWa: "Konfirmasi via WhatsApp", payVa: "Transfer Virtual Account",
-    confirmWa: "KIRIM ORDER VIA WHATSAPP", confirmVa: "SAYA SUDAH TRANSFER",
-    vaInstructions: "Transfer tepat sesuai nominal berikut:", vaCopy: "Salin", vaCopied: "Tersalin!",
-    total: "Total", required: "Isi semua field wajib (*) terlebih dahulu.",
-    successTitle: "Pesanan Masuk!",
-    successWa: "Kamu akan diarahkan ke WhatsApp untuk konfirmasi. Pesanan kami proses setelah konfirmasi.",
-    successVa: "Verifikasi transfer sedang diproses. Hubungi kami via WhatsApp jika perlu bantuan.",
-    backShop: "KEMBALI BELANJA",
-    quote: '"Sederhana adalah kemewahan yang sesungguhnya."', est: "Est. 2025, Medan",
-    feat1t:"Gratis Ongkir", feat1d:"Min. Rp 300.000 area Medan",
-    feat2t:"Bahan Premium", feat2d:"Linen, katun organik & ribbed knit pilihan",
-    feat3t:"Mudah Return", feat3d:"7 hari retur jika ada cacat produksi",
-    feat4t:"CS Responsif", feat4d:"WhatsApp aktif setiap hari, jam 8–21",
-    footerCopy: "© 2025 ReKain Fashion. Medan, North Sumatra.",
-    items: "item",
-    vaNote: "Setelah transfer, klik tombol di bawah untuk konfirmasi via WhatsApp.",
-    waMsg: (cart, form, total) => {
-      const lines = cart.map(i=>`• ${i.name} x${i.qty} — Rp ${(i.price*i.qty).toLocaleString("id-ID")}`).join("\n");
-      return `Halo ReKain! Saya ingin memesan:\n\n${lines}\n\nSubtotal: Rp ${total.toLocaleString("id-ID")}\n\nNama: ${form.name}\nAlamat: ${form.address}\nCatatan: ${form.notes||"-"}`;
-    },
-  },
-  en: {
-    tagline: "Timeless Essentials for Every Age",
-    heroTitle1: "Dress", heroTitle2: "with soul.",
-    heroDesc: "A minimalist quality clothing collection — from babies to adults. Crafted with curated fabrics, designed for everyday comfort.",
-    shopNow: "SHOP NOW", lookbook: "VIEW LOOKBOOK",
-    nav: ["Collection", "About", "Contact"],
-    cats: ["All", "Adults", "Kids", "Baby"],
-    featNew: "New", featBest: "Bestseller",
-    viewDetail: "VIEW DETAIL", pickColor: "Choose Color", addCart: "ADD TO CART",
-    cart: "Cart", emptyCart: "Your cart is empty.", subtotal: "Subtotal",
-    toCheckout: "PROCEED TO CHECKOUT", shipping: "Shipping", negotiate: "Calculated at confirmation",
-    shippingDetail: "Shipping Details", back: "← Back",
-    fullName: "Full Name *", waNumber: "WhatsApp Number *", address: "Full Address *", notes: "Notes (optional)",
-    placeholderAddress: "Street, District, City", placeholderNotes: "Size, color, etc.",
-    payMethod: "Payment Method", payWa: "Confirm via WhatsApp", payVa: "Virtual Account Transfer",
-    confirmWa: "SEND ORDER VIA WHATSAPP", confirmVa: "I HAVE TRANSFERRED",
-    vaInstructions: "Transfer the exact amount below:", vaCopy: "Copy", vaCopied: "Copied!",
-    total: "Total", required: "Please fill all required (*) fields.",
-    successTitle: "Order Received!",
-    successWa: "You'll be redirected to WhatsApp to confirm. We'll process your order after confirmation.",
-    successVa: "We're verifying your transfer. Contact us via WhatsApp if you need help.",
-    backShop: "CONTINUE SHOPPING",
-    quote: '"Simplicity is the ultimate luxury."', est: "Est. 2025, Medan",
-    feat1t:"Free Shipping", feat1d:"Orders above Rp 300,000 in Medan area",
-    feat2t:"Premium Fabric", feat2d:"Linen, organic cotton & ribbed knit",
-    feat3t:"Easy Returns", feat3d:"7-day return for manufacturing defects",
-    feat4t:"Responsive CS", feat4d:"WhatsApp available daily, 8AM–9PM",
-    footerCopy: "© 2025 ReKain Fashion. Medan, North Sumatra.",
-    items: "items",
-    vaNote: "After transferring, click the button below to confirm via WhatsApp.",
-    waMsg: (cart, form, total) => {
-      const lines = cart.map(i=>`• ${i.name} x${i.qty} — Rp ${(i.price*i.qty).toLocaleString("id-ID")}`).join("\n");
-      return `Hi ReKain! I'd like to order:\n\n${lines}\n\nSubtotal: Rp ${total.toLocaleString("id-ID")}\n\nName: ${form.name}\nAddress: ${form.address}\nNotes: ${form.notes||"-"}`;
-    },
-  }
-};
+import { useState, useRef } from "react";
 
 const PRODUCTS = [
-  { id:1, name:"Linen Oversized Shirt", cat:"Adults", price:189000, tag:"Bestseller", colors:["#D4C5B2","#2C2C2C","#8B7355"], img:"👕" },
-  { id:2, name:"Wide Leg Trousers",     cat:"Adults", price:225000, tag:"New",        colors:["#F5F0E8","#4A4A4A","#8B8B6B"], img:"👖" },
-  { id:3, name:"Structured Tote Bag",   cat:"Adults", price:145000, tag:null,         colors:["#2C2C2C","#D4C5B2"],            img:"👜" },
-  { id:4, name:"Ribbed Knit Cardigan",  cat:"Adults", price:210000, tag:"New",        colors:["#E8DDD0","#6B5E4E","#2C2C2C"], img:"🧥" },
-  { id:5, name:"Mini Romper Set",       cat:"Baby",   price:95000,  tag:"Bestseller", colors:["#F9E8D8","#D4E8D8","#E8D8E8"], img:"👶" },
-  { id:6, name:"Soft Knit Onesie",      cat:"Baby",   price:79000,  tag:null,         colors:["#FAEBD7","#B0D4C8"],            img:"🐣" },
-  { id:7, name:"Kids Linen Set",        cat:"Kids",   price:135000, tag:"New",        colors:["#D4C5B2","#F5F0E8","#8FBCBB"], img:"🧒" },
-  { id:8, name:"Kids Casual Dress",     cat:"Kids",   price:120000, tag:null,         colors:["#E8C4C4","#C4D4E8","#C4E8C4"], img:"👗" },
+  { id: 1, name: "Batik Perca Anak", category: "Kemeja", price: 79000, stock: 12, desc: "Kemeja batik anak dari kain perca pilihan, motif klasik nusantara", sizes: ["2-3T","4-5T","6-7T","8-9T"], color: "#8B4513", badge: "Bestseller" },
+  { id: 2, name: "Gaun Perca Floral", category: "Gaun", price: 85000, stock: 8, desc: "Gaun anak cantik dari kain perca bermotif bunga, lembut di kulit", sizes: ["2-3T","4-5T","6-7T"], color: "#C2552A", badge: "New" },
+  { id: 3, name: "Kemeja Batik Casual", category: "Kemeja", price: 75000, stock: 15, desc: "Kemeja batik casual anak cocok untuk acara formal maupun santai", sizes: ["2-3T","4-5T","6-7T","8-9T","10T"], color: "#4A7A5A", badge: null },
+  { id: 4, name: "Gaun Batik Elegan", category: "Gaun", price: 85000, stock: 6, desc: "Gaun batik elegan untuk acara spesial si kecil", sizes: ["3-4T","5-6T","7-8T"], color: "#7B3D8C", badge: "Limited" },
+  { id: 5, name: "Kemeja Perca Polos", category: "Kemeja", price: 75000, stock: 10, desc: "Kemeja anak dari perca solid color, nyaman dipakai sehari-hari", sizes: ["2-3T","4-5T","6-7T","8-9T"], color: "#2C5F8A", badge: null },
+  { id: 6, name: "Set Batik Anak", category: "Set", price: 85000, stock: 5, desc: "Set lengkap batik anak (kemeja + celana/rok) dari kain perca batik", sizes: ["3-4T","5-6T","7-8T"], color: "#8B6914", badge: "Promo" },
 ];
-const CAT_FILTER = ["All","Adults","Kids","Baby"];
-const fmt = n => `Rp ${n.toLocaleString("id-ID")}`;
 
-/* ══════════════════════════════════════════
-   ROOT
-══════════════════════════════════════════ */
-export default function ReKainStore() {
-  const [lang, setLang]         = useState("id");
-  const [cart, setCart]         = useState([]);
+const BANK_ACCOUNTS = [
+  { bank: "BCA", no: "1234567890", name: "REKAIN FASHION" },
+  { bank: "BRI", no: "0987654321", name: "REKAIN FASHION" },
+  { bank: "Mandiri", no: "1122334455", name: "REKAIN FASHION" },
+];
+
+function formatRp(n) {
+  return "Rp" + n.toLocaleString("id-ID");
+}
+
+function generateOrderId() {
+  return "RKN-" + Date.now().toString().slice(-6) + Math.random().toString(36).slice(2,5).toUpperCase();
+}
+
+export default function RekainFashion() {
+  const [page, setPage] = useState("home"); // home | shop | cart | checkout | receipt
+  const [cart, setCart] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [filter, setFilter] = useState("Semua");
   const [cartOpen, setCartOpen] = useState(false);
-  const [activeCat, setActiveCat] = useState(0);
-  const [modal, setModal]       = useState(null);
-  const [selColor, setSelColor] = useState(0);
-  const [step, setStep]         = useState("cart");
-  const [payMethod, setPayMethod] = useState("wa");
-  const [selVa, setSelVa]       = useState(0);
-  const [copied, setCopied]     = useState(false);
-  const [err, setErr]           = useState(false);
-  const [form, setForm]         = useState({ name:"", phone:"", address:"", notes:"" });
+  const [form, setForm] = useState({ name:"", phone:"", address:"", note:"", bank:"BCA" });
+  const [order, setOrder] = useState(null);
+  const receiptRef = useRef();
 
-  const T = COPY[lang];
-  const filtered = activeCat===0 ? PRODUCTS : PRODUCTS.filter(p=>p.cat===CAT_FILTER[activeCat]);
-  const cartCount = cart.reduce((s,i)=>s+i.qty,0);
-  const cartTotal = cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const categories = ["Semua", "Kemeja", "Gaun", "Set"];
+  const filtered = filter === "Semua" ? PRODUCTS : PRODUCTS.filter(p => p.category === filter);
 
-  const addToCart = p => {
+  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+  const shipping = cartTotal > 0 ? 15000 : 0;
+  const grandTotal = cartTotal + shipping;
+
+  function addToCart(product, size) {
+    if (!size) return alert("Pilih ukuran dulu ya!");
     setCart(prev => {
-      const ex = prev.find(i=>i.id===p.id);
-      return ex ? prev.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i) : [...prev,{...p,qty:1}];
+      const key = `${product.id}-${size}`;
+      const existing = prev.find(i => i.key === key);
+      if (existing) return prev.map(i => i.key === key ? {...i, qty: i.qty+1} : i);
+      return [...prev, { key, ...product, size, qty: 1 }];
     });
-    setCartOpen(true); setModal(null);
-  };
-  const updateQty = (id,d) => setCart(prev=>prev.map(i=>i.id===id?{...i,qty:Math.max(0,i.qty+d)}:i).filter(i=>i.qty>0));
+    setSelectedProduct(null);
+    setSelectedSize("");
+    setCartOpen(true);
+  }
 
-  const handleProceed = () => {
-    if (!form.name||!form.phone||!form.address){ setErr(true); return; }
-    setErr(false);
-    if(payMethod==="wa"){
-      window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(T.waMsg(cart,form,cartTotal))}`,"_blank");
-      setStep("success-wa");
-    } else { setStep("va"); }
-  };
-  const handleVaConfirm = () => {
-    const msg = T.waMsg(cart,form,cartTotal)+`\n\nMetode: VA ${VA_ACCOUNTS[selVa].bank}`;
-    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`,"_blank");
-    setStep("success-va");
-  };
-  const resetAll = () => { setCart([]); setCartOpen(false); setStep("cart"); setForm({name:"",phone:"",address:"",notes:""}); setErr(false); setPayMethod("wa"); };
-  const copyVa = va => { navigator.clipboard.writeText(va); setCopied(true); setTimeout(()=>setCopied(false),2000); };
+  function removeFromCart(key) {
+    setCart(prev => prev.filter(i => i.key !== key));
+  }
 
-  useEffect(()=>{ document.title="ReKain — Timeless Essentials"; },[]);
+  function updateQty(key, delta) {
+    setCart(prev => prev.map(i => i.key === key ? {...i, qty: Math.max(1, i.qty+delta)} : i));
+  }
+
+  function submitOrder() {
+    if (!form.name || !form.phone || !form.address) return alert("Lengkapi data dulu ya!");
+    const orderId = generateOrderId();
+    const bankInfo = BANK_ACCOUNTS.find(b => b.bank === form.bank);
+    const newOrder = {
+      id: orderId,
+      date: new Date().toLocaleString("id-ID"),
+      customer: form,
+      items: [...cart],
+      subtotal: cartTotal,
+      shipping,
+      total: grandTotal,
+      bank: bankInfo,
+    };
+    setOrder(newOrder);
+    setCart([]);
+    setPage("receipt");
+    setCartOpen(false);
+  }
+
+  function shareWA() {
+    if (!order) return;
+    const items = order.items.map(i => `  - ${i.name} (${i.size}) x${i.qty} = ${formatRp(i.price*i.qty)}`).join("\n");
+    const msg = `*PESANAN REKAIN FASHION* 🌿\n\nNo. Order: *${order.id}*\nTanggal: ${order.date}\n\n*DETAIL PESANAN:*\n${items}\n\nSubtotal: ${formatRp(order.subtotal)}\nOngkir: ${formatRp(order.shipping)}\n*TOTAL: ${formatRp(order.total)}*\n\n*PEMBAYARAN:*\nTransfer ke ${order.bank.bank}\nNo. Rek: ${order.bank.no}\na.n. ${order.bank.name}\n\nNama: ${order.customer.name}\nWA: ${order.customer.phone}\nAlamat: ${order.customer.address}\n\nTerima kasih sudah berbelanja di Rekain Fashion! 🙏`;
+    window.open(`https://wa.me/6289529178826?text=${encodeURIComponent(msg)}`);
+  }
+
+  function printReceipt() {
+    window.print();
+  }
 
   return (
-    <>
+    <div style={styles.app}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-        :root{--cream:#F7F4EF;--warm:#FDFCFA;--ink:#1A1A18;--muted:#6B6A66;--accent:#8B7355;--al:#D4C5B2;--border:#E8E3DC;--green:#25D366;--serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',sans-serif}
-        html{scroll-behavior:smooth}body{background:var(--cream);color:var(--ink);font-family:var(--sans)}
-        input:focus{outline:2px solid var(--al)!important;border-color:var(--accent)!important}
-        .fi{animation:fu .6s ease forwards;opacity:0}
-        @keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-        .s1{animation-delay:.1s}.s2{animation-delay:.22s}.s3{animation-delay:.38s}
-        @keyframes sli{from{transform:translateX(100%)}to{transform:translateX(0)}}
-        @keyframes pop{0%{opacity:0;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
-        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--al);border-radius:2px}
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #F5F0E8; } ::-webkit-scrollbar-thumb { background: #8B4513; border-radius: 2px; }
+        @media print {
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          body { background: white; }
+        }
+        .hover-lift { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+        .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(139,69,19,0.15); }
+        .btn-primary { background: #2D1B0E; color: #F5F0E8; border: none; padding: 14px 28px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+        .btn-primary:hover { background: #8B4513; }
+        .btn-outline { background: transparent; color: #2D1B0E; border: 1.5px solid #2D1B0E; padding: 12px 24px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .btn-outline:hover { background: #2D1B0E; color: #F5F0E8; }
+        input, textarea, select { font-family: 'DM Sans', sans-serif; }
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      {/* NAV */}
-      <nav style={{position:"sticky",top:0,zIndex:100,background:"rgba(247,244,239,.93)",backdropFilter:"blur(14px)",borderBottom:"1px solid var(--border)",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:60}}>
-        <span style={{fontFamily:"var(--serif)",fontSize:22,letterSpacing:"0.12em"}}>Re<span style={{color:"var(--accent)"}}>Kain</span></span>
-        <div style={{display:"flex",gap:24,fontSize:13,letterSpacing:"0.06em",color:"var(--muted)"}}>
-          {T.nav.map(m=>(
-            <span key={m} style={{cursor:"pointer",transition:"color .2s"}}
-              onMouseEnter={e=>e.target.style.color="var(--ink)"}
-              onMouseLeave={e=>e.target.style.color="var(--muted)"}>{m}</span>
+      {/* NAVBAR */}
+      <nav style={styles.nav} className="no-print">
+        <div style={styles.navLeft}>
+          <span style={styles.logo} onClick={() => setPage("home")}>REKAIN</span>
+          <span style={styles.logoSub}>FASHION</span>
+        </div>
+        <div style={styles.navLinks}>
+          {["home","shop"].map(p => (
+            <span key={p} style={{...styles.navLink, ...(page===p?{borderBottom:"2px solid #2D1B0E"}:{})}} onClick={() => setPage(p)}>
+              {p === "home" ? "Beranda" : "Koleksi"}
+            </span>
           ))}
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:14}}>
-          <button onClick={()=>setLang(l=>l==="id"?"en":"id")}
-            style={{background:"var(--border)",border:"none",borderRadius:20,padding:"4px 12px",fontSize:11,letterSpacing:"0.1em",cursor:"pointer",fontFamily:"var(--sans)",color:"var(--ink)",fontWeight:500}}>
-            {lang==="id"?"EN":"ID"}
-          </button>
-          <button onClick={()=>{setCartOpen(true);setStep("cart");}} style={{background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontSize:13,color:"var(--ink)"}}>
-            <span style={{fontSize:18}}>🛍️</span>
-            {cartCount>0&&<span style={{background:"var(--accent)",color:"#fff",borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>{cartCount}</span>}
-          </button>
+        <div style={styles.navRight}>
+          <span style={styles.cartBtn} onClick={() => setCartOpen(true)}>
+            🛒 <span style={styles.cartBadge}>{cartCount}</span>
+          </span>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section style={{minHeight:"88vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"80px 24px 60px",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 40%,rgba(212,197,178,.2) 0%,transparent 70%)",pointerEvents:"none"}}/>
-        <p className="fi s1" style={{fontSize:11,letterSpacing:"0.22em",color:"var(--accent)",textTransform:"uppercase",marginBottom:20}}>{T.tagline}</p>
-        <h1 className="fi s2" style={{fontFamily:"var(--serif)",fontSize:"clamp(52px,10vw,110px)",fontWeight:300,lineHeight:1.05,marginBottom:24}}>
-          {T.heroTitle1}<br/><em style={{color:"var(--accent)"}}>{T.heroTitle2}</em>
-        </h1>
-        <p className="fi s3" style={{fontSize:15,color:"var(--muted)",maxWidth:420,lineHeight:1.75,marginBottom:40}}>{T.heroDesc}</p>
-        <div className="fi s3" style={{display:"flex",gap:12}}>
-          <button onClick={()=>document.getElementById("shop").scrollIntoView({behavior:"smooth"})}
-            style={{background:"var(--ink)",color:"var(--cream)",border:"none",padding:"14px 32px",fontSize:13,letterSpacing:"0.08em",cursor:"pointer",fontFamily:"var(--sans)"}}
-            onMouseEnter={e=>e.currentTarget.style.opacity=".8"} onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
-            {T.shopNow}
-          </button>
-          <button style={{background:"none",color:"var(--ink)",border:"1px solid var(--border)",padding:"14px 32px",fontSize:13,letterSpacing:"0.08em",cursor:"pointer",fontFamily:"var(--sans)"}}>{T.lookbook}</button>
-        </div>
-        <div style={{position:"absolute",top:"18%",right:"7%",background:"var(--warm)",border:"1px solid var(--border)",padding:"12px 16px",fontSize:12,color:"var(--muted)",boxShadow:"0 4px 20px rgba(0,0,0,.06)"}}>
-          👶 Baby · 🧒 Kids · 🧑 Adults
-        </div>
-      </section>
-
-      {/* CATEGORY BAR */}
-      <div id="shop" style={{borderTop:"1px solid var(--border)",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"center"}}>
-        {T.cats.map((cat,i)=>(
-          <button key={cat} onClick={()=>setActiveCat(i)}
-            style={{background:"none",border:"none",padding:"16px 28px",fontSize:12,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",fontFamily:"var(--sans)",color:activeCat===i?"var(--ink)":"var(--muted)",borderBottom:activeCat===i?"2px solid var(--ink)":"2px solid transparent",transition:"all .2s"}}>
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* PRODUCT GRID */}
-      <section style={{maxWidth:1200,margin:"0 auto",padding:"60px 24px"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:32}}>
-          {filtered.map((p,i)=><PCard key={p.id} p={p} i={i} T={T} onOpen={()=>{setModal(p);setSelColor(0);}}/>)}
-        </div>
-      </section>
-
-      {/* QUOTE */}
-      <section style={{background:"var(--ink)",color:"var(--cream)",padding:"60px 24px",textAlign:"center"}}>
-        <p style={{fontFamily:"var(--serif)",fontSize:"clamp(22px,4vw,40px)",fontWeight:300,letterSpacing:"0.04em",marginBottom:12}}>{T.quote}</p>
-        <p style={{fontSize:11,letterSpacing:"0.16em",color:"var(--al)",textTransform:"uppercase"}}>ReKain — {T.est}</p>
-      </section>
-
-      {/* FEATURES */}
-      <section style={{maxWidth:900,margin:"0 auto",padding:"80px 24px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:40}}>
-        {[{icon:"📦",t:T.feat1t,d:T.feat1d},{icon:"✨",t:T.feat2t,d:T.feat2d},{icon:"🔄",t:T.feat3t,d:T.feat3d},{icon:"💬",t:T.feat4t,d:T.feat4d}].map(f=>(
-          <div key={f.t} style={{textAlign:"center"}}>
-            <div style={{fontSize:28,marginBottom:12}}>{f.icon}</div>
-            <div style={{fontWeight:500,fontSize:14,marginBottom:6}}>{f.t}</div>
-            <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.6}}>{f.d}</div>
-          </div>
-        ))}
-      </section>
-
-      {/* FOOTER */}
-      <footer style={{borderTop:"1px solid var(--border)",padding:"32px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-        <span style={{fontFamily:"var(--serif)",fontSize:18}}>Re<span style={{color:"var(--accent)"}}>Kain</span></span>
-        <span style={{fontSize:12,color:"var(--muted)"}}>{T.footerCopy}</span>
-        <div style={{display:"flex",gap:16}}>
-          {["Instagram","TikTok","WhatsApp"].map(s=><span key={s} style={{fontSize:12,color:"var(--muted)",cursor:"pointer"}}>{s}</span>)}
-        </div>
-      </footer>
-
-      {/* PRODUCT MODAL */}
-      {modal&&(
-        <div onClick={()=>setModal(null)} style={{position:"fixed",inset:0,background:"rgba(26,26,24,.5)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"var(--warm)",maxWidth:480,width:"100%",padding:36,position:"relative",animation:"pop .28s ease"}}>
-            <button onClick={()=>setModal(null)} style={{position:"absolute",top:16,right:16,background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--muted)"}}>✕</button>
-            <div style={{fontSize:64,textAlign:"center",background:"var(--cream)",padding:24,marginBottom:20}}>{modal.img}</div>
-            {modal.tag&&<span style={{fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",background:"var(--accent)",color:"#fff",padding:"3px 10px"}}>{modal.tag==="New"?T.featNew:T.featBest}</span>}
-            <h2 style={{fontFamily:"var(--serif)",fontSize:26,fontWeight:400,margin:"12px 0 4px"}}>{modal.name}</h2>
-            <p style={{fontSize:12,color:"var(--muted)",marginBottom:4}}>{modal.cat}</p>
-            <p style={{fontSize:20,fontFamily:"var(--serif)",color:"var(--accent)",marginBottom:20}}>{fmt(modal.price)}</p>
-            <p style={{fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--muted)",marginBottom:8}}>{T.pickColor}</p>
-            <div style={{display:"flex",gap:8,marginBottom:28}}>
-              {modal.colors.map((c,i)=>(
-                <button key={i} onClick={()=>setSelColor(i)}
-                  style={{width:28,height:28,borderRadius:"50%",background:c,border:selColor===i?"2px solid var(--ink)":"2px solid transparent",outline:selColor===i?"2px solid var(--ink)":"none",outlineOffset:2,cursor:"pointer",transition:"all .15s"}}/>
-              ))}
+      {/* CART SIDEBAR */}
+      {cartOpen && (
+        <div style={styles.overlay} onClick={() => setCartOpen(false)}>
+          <div style={styles.cartSidebar} onClick={e => e.stopPropagation()}>
+            <div style={styles.cartHeader}>
+              <span style={{fontFamily:"'Playfair Display'",fontSize:20,fontWeight:700}}>Keranjang</span>
+              <span style={{cursor:"pointer",fontSize:20}} onClick={() => setCartOpen(false)}>✕</span>
             </div>
-            <button onClick={()=>addToCart(modal)}
-              style={{width:"100%",background:"var(--ink)",color:"var(--cream)",border:"none",padding:16,fontSize:13,letterSpacing:"0.1em",cursor:"pointer",fontFamily:"var(--sans)"}}>
-              {T.addCart}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* DRAWER */}
-      {cartOpen&&(
-        <>
-          <div onClick={()=>setCartOpen(false)} style={{position:"fixed",inset:0,background:"rgba(26,26,24,.4)",zIndex:300}}/>
-          <div style={{position:"fixed",top:0,right:0,bottom:0,width:"min(440px,100vw)",background:"var(--warm)",zIndex:301,display:"flex",flexDirection:"column",boxShadow:"-4px 0 30px rgba(0,0,0,.1)",animation:"sli .3s ease"}}>
-
-            {step==="success-wa"||step==="success-va" ? (
-              /* SUCCESS */
-              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:40,textAlign:"center"}}>
-                <div style={{fontSize:56,marginBottom:20}}>{step==="success-wa"?"💬":"✅"}</div>
-                <h2 style={{fontFamily:"var(--serif)",fontSize:28,fontWeight:400,marginBottom:12}}>{T.successTitle}</h2>
-                <p style={{fontSize:13,color:"var(--muted)",lineHeight:1.75,maxWidth:300,marginBottom:32}}>{step==="success-wa"?T.successWa:T.successVa}</p>
-                <button onClick={resetAll} style={{background:"var(--ink)",color:"var(--cream)",border:"none",padding:"14px 32px",fontSize:13,cursor:"pointer",fontFamily:"var(--sans)",letterSpacing:"0.08em"}}>{T.backShop}</button>
+            {cart.length === 0 ? (
+              <div style={{textAlign:"center",padding:"60px 20px",color:"#999",fontSize:14}}>
+                <div style={{fontSize:40,marginBottom:12}}>🛒</div>
+                Keranjang masih kosong
               </div>
-
-            ) : step==="va" ? (
-              /* VA SCREEN */
-              <>
-                <div style={{padding:"18px 24px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-                  <button onClick={()=>setStep("form")} style={{background:"none",border:"none",fontSize:13,cursor:"pointer",color:"var(--muted)",fontFamily:"var(--sans)"}}>{T.back}</button>
-                  <span style={{fontFamily:"var(--serif)",fontSize:18}}>Virtual Account</span>
-                  <div style={{width:60}}/>
-                </div>
-                <div style={{flex:1,overflow:"auto",padding:24}}>
-                  <div style={{display:"flex",gap:8,marginBottom:24}}>
-                    {VA_ACCOUNTS.map((v,i)=>(
-                      <button key={v.bank} onClick={()=>setSelVa(i)}
-                        style={{flex:1,background:selVa===i?"var(--ink)":"var(--cream)",color:selVa===i?"var(--cream)":"var(--muted)",border:"1px solid var(--border)",padding:"10px 6px",fontSize:13,cursor:"pointer",fontFamily:"var(--sans)",fontWeight:500,transition:"all .2s"}}>
-                        {v.logo} {v.bank}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{background:"var(--cream)",border:"1px solid var(--border)",padding:24,marginBottom:20,textAlign:"center"}}>
-                    <p style={{fontSize:11,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--muted)",marginBottom:8}}>{VA_ACCOUNTS[selVa].bank} Virtual Account</p>
-                    <p style={{fontFamily:"var(--serif)",fontSize:32,letterSpacing:"0.1em",color:"var(--ink)",marginBottom:4}}>{VA_ACCOUNTS[selVa].va}</p>
-                    <p style={{fontSize:12,color:"var(--muted)",marginBottom:16}}>{VA_ACCOUNTS[selVa].name}</p>
-                    <button onClick={()=>copyVa(VA_ACCOUNTS[selVa].va)}
-                      style={{background:copied?"#4A7C59":"var(--accent)",color:"#fff",border:"none",padding:"8px 24px",fontSize:12,cursor:"pointer",fontFamily:"var(--sans)",letterSpacing:"0.08em",transition:"background .2s"}}>
-                      {copied?`✓ ${T.vaCopied}`:`📋 ${T.vaCopy}`}
-                    </button>
-                  </div>
-                  <p style={{fontSize:13,color:"var(--muted)",marginBottom:8}}>{T.vaInstructions}</p>
-                  <div style={{background:"var(--ink)",color:"var(--cream)",padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-                    <span style={{fontSize:13}}>{T.total}</span>
-                    <span style={{fontFamily:"var(--serif)",fontSize:22}}>{fmt(cartTotal)}</span>
-                  </div>
-                  <p style={{fontSize:12,color:"var(--muted)",lineHeight:1.7}}>⚠ {T.vaNote}</p>
-                </div>
-                <div style={{padding:24,borderTop:"1px solid var(--border)",flexShrink:0}}>
-                  <button onClick={handleVaConfirm}
-                    style={{width:"100%",background:"var(--green)",color:"#fff",border:"none",padding:16,fontSize:13,cursor:"pointer",fontFamily:"var(--sans)",letterSpacing:"0.08em"}}>
-                    💬 {T.confirmVa}
-                  </button>
-                </div>
-              </>
-
-            ) : step==="form" ? (
-              /* FORM SCREEN */
-              <>
-                <div style={{padding:"18px 24px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-                  <button onClick={()=>setStep("cart")} style={{background:"none",border:"none",fontSize:13,cursor:"pointer",color:"var(--muted)",fontFamily:"var(--sans)"}}>{T.back}</button>
-                  <span style={{fontFamily:"var(--serif)",fontSize:18}}>{T.shippingDetail}</span>
-                  <div style={{width:60}}/>
-                </div>
-                <div style={{flex:1,overflow:"auto",padding:24}}>
-                  {[
-                    {label:T.fullName,key:"name",type:"text",ph:"e.g. Hestia"},
-                    {label:T.waNumber,key:"phone",type:"tel",ph:"08xxxxxxxxxx"},
-                    {label:T.address,key:"address",type:"text",ph:T.placeholderAddress},
-                    {label:T.notes,key:"notes",type:"text",ph:T.placeholderNotes},
-                  ].map(f=>(
-                    <div key={f.key} style={{marginBottom:16}}>
-                      <label style={{display:"block",fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:6}}>{f.label}</label>
-                      <input value={form[f.key]} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))}
-                        type={f.type} placeholder={f.ph}
-                        style={{width:"100%",border:"1px solid var(--border)",background:"var(--cream)",padding:"12px 14px",fontSize:14,fontFamily:"var(--sans)",outline:"none",color:"var(--ink)",transition:"border .2s"}}/>
-                    </div>
-                  ))}
-                  <p style={{fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:10,marginTop:8}}>{T.payMethod}</p>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-                    {[{key:"wa",label:T.payWa,icon:"💬"},{key:"va",label:T.payVa,icon:"🏦"}].map(m=>(
-                      <button key={m.key} onClick={()=>setPayMethod(m.key)}
-                        style={{background:payMethod===m.key?"var(--ink)":"var(--cream)",color:payMethod===m.key?"var(--cream)":"var(--muted)",border:"1px solid var(--border)",padding:"12px 8px",fontSize:12,cursor:"pointer",fontFamily:"var(--sans)",lineHeight:1.5,transition:"all .2s",textAlign:"center"}}>
-                        <div style={{fontSize:20,marginBottom:4}}>{m.icon}</div>{m.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{background:"var(--cream)",padding:16}}>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"var(--muted)",marginBottom:6}}>
-                      <span>{cartCount} {T.items}</span><span>{fmt(cartTotal)}</span>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:14}}>
-                      <span>{T.shipping}</span><span style={{color:"var(--accent)",fontSize:12}}>{T.negotiate}</span>
-                    </div>
-                  </div>
-                  {err&&<p style={{color:"#C0392B",fontSize:12,marginTop:12}}>⚠ {T.required}</p>}
-                </div>
-                <div style={{padding:24,borderTop:"1px solid var(--border)",flexShrink:0}}>
-                  <button onClick={handleProceed}
-                    style={{width:"100%",background:payMethod==="wa"?"var(--green)":"var(--ink)",color:"#fff",border:"none",padding:16,fontSize:13,cursor:"pointer",fontFamily:"var(--sans)",letterSpacing:"0.08em"}}>
-                    {payMethod==="wa"?`💬 ${T.confirmWa}`:`🏦 ${T.confirmVa}`}
-                  </button>
-                </div>
-              </>
-
             ) : (
-              /* CART SCREEN */
               <>
-                <div style={{padding:"18px 24px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontFamily:"var(--serif)",fontSize:20}}>{T.cart}</span>
-                  <button onClick={()=>setCartOpen(false)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--muted)"}}>✕</button>
-                </div>
-                <div style={{flex:1,overflow:"auto",padding:"8px 24px"}}>
-                  {cart.length===0?(
-                    <div style={{textAlign:"center",padding:60}}>
-                      <div style={{fontSize:40,marginBottom:12}}>🛍️</div>
-                      <p style={{color:"var(--muted)",fontSize:13}}>{T.emptyCart}</p>
-                    </div>
-                  ):cart.map(item=>(
-                    <div key={item.id} style={{display:"flex",gap:14,padding:"16px 0",borderBottom:"1px solid var(--border)"}}>
-                      <div style={{fontSize:34,background:"var(--cream)",width:54,height:54,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{item.img}</div>
+                <div style={{flex:1,overflowY:"auto",padding:"0 24px"}}>
+                  {cart.map(item => (
+                    <div key={item.key} style={styles.cartItem}>
+                      <div style={{...styles.productSwatch, background: item.color, width:48, height:48, flexShrink:0}} />
                       <div style={{flex:1}}>
-                        <p style={{fontSize:14,marginBottom:2}}>{item.name}</p>
-                        <p style={{fontSize:12,color:"var(--muted)",marginBottom:8}}>{fmt(item.price)}</p>
-                        <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <button onClick={()=>updateQty(item.id,-1)} style={{width:24,height:24,border:"1px solid var(--border)",background:"none",cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-                          <span style={{fontSize:13,minWidth:16,textAlign:"center"}}>{item.qty}</span>
-                          <button onClick={()=>updateQty(item.id,+1)} style={{width:24,height:24,border:"1px solid var(--border)",background:"none",cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
-                        </div>
+                        <div style={{fontSize:13,fontWeight:500}}>{item.name}</div>
+                        <div style={{fontSize:12,color:"#888"}}>Ukuran: {item.size}</div>
+                        <div style={{fontSize:13,fontWeight:600,color:"#8B4513",marginTop:4}}>{formatRp(item.price)}</div>
                       </div>
-                      <p style={{fontFamily:"var(--serif)",fontSize:15,flexShrink:0}}>{fmt(item.price*item.qty)}</p>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                        <div style={styles.qtyRow}>
+                          <button style={styles.qtyBtn} onClick={() => updateQty(item.key,-1)}>−</button>
+                          <span style={{fontSize:13,fontWeight:500,minWidth:20,textAlign:"center"}}>{item.qty}</span>
+                          <button style={styles.qtyBtn} onClick={() => updateQty(item.key,1)}>+</button>
+                        </div>
+                        <span style={{fontSize:11,color:"#C0392B",cursor:"pointer"}} onClick={() => removeFromCart(item.key)}>Hapus</span>
+                      </div>
                     </div>
                   ))}
                 </div>
-                {cart.length>0&&(
-                  <div style={{padding:24,borderTop:"1px solid var(--border)",flexShrink:0}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:16}}>
-                      <span style={{fontSize:13,color:"var(--muted)"}}>{T.subtotal}</span>
-                      <span style={{fontFamily:"var(--serif)",fontSize:16}}>{fmt(cartTotal)}</span>
-                    </div>
-                    <button onClick={()=>setStep("form")}
-                      style={{width:"100%",background:"var(--ink)",color:"var(--cream)",border:"none",padding:16,fontSize:13,cursor:"pointer",fontFamily:"var(--sans)",letterSpacing:"0.08em"}}>
-                      {T.toCheckout}
-                    </button>
+                <div style={styles.cartFooter}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:13}}>
+                    <span style={{color:"#666"}}>Subtotal</span><span>{formatRp(cartTotal)}</span>
                   </div>
-                )}
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:16,fontSize:13}}>
+                    <span style={{color:"#666"}}>Estimasi ongkir</span><span>{formatRp(shipping)}</span>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:20,fontSize:16,fontWeight:700}}>
+                    <span>Total</span><span style={{color:"#8B4513"}}>{formatRp(grandTotal)}</span>
+                  </div>
+                  <button className="btn-primary" style={{width:"100%"}} onClick={() => { setPage("checkout"); setCartOpen(false); }}>
+                    LANJUT KE CHECKOUT
+                  </button>
+                </div>
               </>
             )}
           </div>
-        </>
+        </div>
       )}
-    </>
+
+      {/* PRODUCT MODAL */}
+      {selectedProduct && (
+        <div style={styles.overlay} onClick={() => setSelectedProduct(null)}>
+          <div style={styles.modal} onClick={e => e.stopPropagation()}>
+            <div style={{...styles.productSwatch, background: selectedProduct.color, height:200, borderRadius:0}} />
+            <div style={{padding:24}}>
+              {selectedProduct.badge && <span style={styles.badge}>{selectedProduct.badge}</span>}
+              <div style={{fontFamily:"'Playfair Display'",fontSize:22,fontWeight:700,margin:"8px 0 4px"}}>{selectedProduct.name}</div>
+              <div style={{fontSize:13,color:"#666",marginBottom:12}}>{selectedProduct.desc}</div>
+              <div style={{fontSize:20,fontWeight:700,color:"#8B4513",marginBottom:16}}>{formatRp(selectedProduct.price)}</div>
+              <div style={{fontSize:12,fontWeight:500,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>Pilih Ukuran</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+                {selectedProduct.sizes.map(s => (
+                  <button key={s} onClick={() => setSelectedSize(s)} style={{
+                    padding:"8px 14px", border: selectedSize===s ? "2px solid #8B4513":"1.5px solid #DDD",
+                    background: selectedSize===s ? "#8B4513":"white", color: selectedSize===s ? "white":"#333",
+                    fontSize:12, cursor:"pointer", fontFamily:"'DM Sans'"
+                  }}>{s}</button>
+                ))}
+              </div>
+              <button className="btn-primary" style={{width:"100%",marginBottom:12}} onClick={() => addToCart(selectedProduct, selectedSize)}>
+                TAMBAH KE KERANJANG
+              </button>
+              <button className="btn-outline" style={{width:"100%"}} onClick={() => setSelectedProduct(null)}>BATAL</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PAGE: HOME */}
+      {page === "home" && (
+        <div className="fade-in">
+          {/* HERO */}
+          <section style={styles.hero}>
+            <div style={styles.heroPattern} />
+            <div style={styles.heroContent}>
+              <div style={{fontSize:11,letterSpacing:4,textTransform:"uppercase",color:"#8B4513",marginBottom:16}}>
+                ✦ Sustainable Local Fashion ✦
+              </div>
+              <h1 style={styles.heroTitle}>Dari Kain Sisa,<br/>Lahir Karya Bermakna</h1>
+              <p style={styles.heroSub}>Setiap helai kain perca kami ubah menjadi pakaian anak yang indah, nyaman, dan ramah lingkungan. Buatan lokal, penuh cinta.</p>
+              <div style={{display:"flex",gap:12,flexWrap:"wrap",justifyContent:"center"}}>
+                <button className="btn-primary" onClick={() => setPage("shop")}>LIHAT KOLEKSI</button>
+                <button className="btn-outline" onClick={() => setPage("shop")}>TENTANG KAMI</button>
+              </div>
+            </div>
+          </section>
+
+          {/* VALUES */}
+          <section style={styles.valuesSection}>
+            {[
+              {icon:"🌿",title:"Zero Waste",desc:"Memanfaatkan kain perca limbah konveksi yang berkualitas"},
+              {icon:"👶",title:"Aman Anak",desc:"Bahan dipilih khusus, lembut dan nyaman untuk kulit anak"},
+              {icon:"🧵",title:"Buatan Lokal",desc:"Dijahit oleh pengrajin lokal Medan dengan keahlian terbaik"},
+              {icon:"💚",title:"Harga Terjangkau",desc:"Berkualitas tinggi tanpa menguras kantong orang tua"},
+            ].map((v,i) => (
+              <div key={i} style={styles.valueCard}>
+                <div style={{fontSize:32,marginBottom:12}}>{v.icon}</div>
+                <div style={{fontFamily:"'Playfair Display'",fontSize:16,fontWeight:700,marginBottom:6}}>{v.title}</div>
+                <div style={{fontSize:13,color:"#777",lineHeight:1.6}}>{v.desc}</div>
+              </div>
+            ))}
+          </section>
+
+          {/* FEATURED */}
+          <section style={{padding:"60px 5%"}}>
+            <div style={{textAlign:"center",marginBottom:40}}>
+              <div style={{fontSize:11,letterSpacing:4,color:"#8B4513",textTransform:"uppercase",marginBottom:8}}>Pilihan Terbaik</div>
+              <h2 style={{fontFamily:"'Playfair Display'",fontSize:32,fontWeight:700}}>Koleksi Unggulan</h2>
+            </div>
+            <div style={styles.productGrid}>
+              {PRODUCTS.slice(0,3).map(p => (
+                <ProductCard key={p.id} product={p} onSelect={() => setSelectedProduct(p)} />
+              ))}
+            </div>
+            <div style={{textAlign:"center",marginTop:40}}>
+              <button className="btn-outline" onClick={() => setPage("shop")}>LIHAT SEMUA KOLEKSI</button>
+            </div>
+          </section>
+
+          {/* STORY */}
+          <section style={styles.storySection}>
+            <div style={styles.storyLeft}>
+              <div style={{fontSize:11,letterSpacing:4,color:"#C2552A",textTransform:"uppercase",marginBottom:12}}>Cerita Kami</div>
+              <h2 style={{fontFamily:"'Playfair Display'",fontSize:28,fontWeight:700,color:"#F5F0E8",marginBottom:16,lineHeight:1.3}}>Rekain — Merekam Kisah dari Setiap Kain</h2>
+              <p style={{fontSize:14,lineHeight:1.8,color:"#D4C5B0",marginBottom:20}}>Rekain Fashion lahir dari kepedulian terhadap limbah tekstil. Kami percaya setiap potongan kain punya cerita — dan kami hadir untuk meneruskan cerita itu menjadi pakaian anak yang cantik, berkualitas, dan bermakna.</p>
+              <p style={{fontSize:14,lineHeight:1.8,color:"#D4C5B0"}}>Berbasis di Medan, kami bekerja sama dengan pengrajin lokal untuk menghadirkan koleksi batik anak yang merayakan keindahan nusantara.</p>
+            </div>
+            <div style={styles.storyRight}>
+              {["Kain Perca → Karya", "Lokal & Berkelanjutan", "Untuk Si Kecil"].map((t,i) => (
+                <div key={i} style={styles.storyTag}>
+                  <span style={{fontSize:18}}>✦</span> {t}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* FOOTER */}
+          <footer style={styles.footer}>
+            <div style={{fontFamily:"'Playfair Display'",fontSize:24,fontWeight:700,marginBottom:4}}>REKAIN FASHION</div>
+            <div style={{fontSize:12,color:"#999",marginBottom:16}}>Dari Kain Sisa, Lahir Karya Bermakna</div>
+            <div style={{fontSize:12,color:"#777"}}>© 2025 Rekain Fashion · Medan, Sumatera Utara · rekainfashion.blog</div>
+          </footer>
+        </div>
+      )}
+
+      {/* PAGE: SHOP */}
+      {page === "shop" && (
+        <div style={{padding:"40px 5%"}} className="fade-in">
+          <div style={{textAlign:"center",marginBottom:40}}>
+            <div style={{fontSize:11,letterSpacing:4,color:"#8B4513",textTransform:"uppercase",marginBottom:8}}>Koleksi Kami</div>
+            <h1 style={{fontFamily:"'Playfair Display'",fontSize:36,fontWeight:700}}>Semua Produk</h1>
+          </div>
+          <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:32,flexWrap:"wrap"}}>
+            {categories.map(c => (
+              <button key={c} onClick={() => setFilter(c)} style={{
+                padding:"8px 20px", border: filter===c?"2px solid #2D1B0E":"1.5px solid #DDD",
+                background: filter===c?"#2D1B0E":"white", color: filter===c?"white":"#333",
+                fontSize:12, cursor:"pointer", letterSpacing:0.5, fontFamily:"'DM Sans'"
+              }}>{c}</button>
+            ))}
+          </div>
+          <div style={styles.productGrid}>
+            {filtered.map(p => (
+              <ProductCard key={p.id} product={p} onSelect={() => setSelectedProduct(p)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* PAGE: CHECKOUT */}
+      {page === "checkout" && (
+        <div style={{maxWidth:640,margin:"0 auto",padding:"40px 5%"}} className="fade-in">
+          <div style={{marginBottom:32}}>
+            <span style={{fontSize:12,color:"#8B4513",cursor:"pointer"}} onClick={() => setPage("shop")}>← Kembali belanja</span>
+            <h1 style={{fontFamily:"'Playfair Display'",fontSize:28,fontWeight:700,marginTop:8}}>Checkout</h1>
+          </div>
+
+          {/* ORDER SUMMARY */}
+          <div style={styles.checkoutBox}>
+            <div style={{fontWeight:600,marginBottom:16,fontSize:14,letterSpacing:0.5}}>RINGKASAN PESANAN</div>
+            {cart.map(item => (
+              <div key={item.key} style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:13}}>
+                <span>{item.name} ({item.size}) x{item.qty}</span>
+                <span style={{fontWeight:500}}>{formatRp(item.price*item.qty)}</span>
+              </div>
+            ))}
+            <div style={{borderTop:"1px solid #E8E0D0",marginTop:12,paddingTop:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#666",marginBottom:4}}>
+                <span>Ongkir</span><span>{formatRp(shipping)}</span>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:16,fontWeight:700,marginTop:8}}>
+                <span>TOTAL</span><span style={{color:"#8B4513"}}>{formatRp(grandTotal)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* FORM */}
+          <div style={styles.checkoutBox}>
+            <div style={{fontWeight:600,marginBottom:16,fontSize:14,letterSpacing:0.5}}>DATA PENGIRIMAN</div>
+            {[
+              {label:"Nama Lengkap *",key:"name",type:"text",ph:"Nama penerima"},
+              {label:"No. WhatsApp *",key:"phone",type:"tel",ph:"628xxxxxxxxxx"},
+              {label:"Alamat Lengkap *",key:"address",type:"textarea",ph:"Jl. ... No. ..., Kelurahan, Kecamatan, Kota"},
+              {label:"Catatan (opsional)",key:"note",type:"textarea",ph:"Instruksi khusus untuk penjual..."},
+            ].map(f => (
+              <div key={f.key} style={{marginBottom:16}}>
+                <label style={{display:"block",fontSize:12,fontWeight:500,letterSpacing:0.5,marginBottom:6}}>{f.label}</label>
+                {f.type === "textarea" ? (
+                  <textarea rows={3} placeholder={f.ph} value={form[f.key]} onChange={e => setForm({...form,[f.key]:e.target.value})} style={styles.input} />
+                ) : (
+                  <input type={f.type} placeholder={f.ph} value={form[f.key]} onChange={e => setForm({...form,[f.key]:e.target.value})} style={styles.input} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* PAYMENT METHOD */}
+          <div style={styles.checkoutBox}>
+            <div style={{fontWeight:600,marginBottom:16,fontSize:14,letterSpacing:0.5}}>METODE PEMBAYARAN</div>
+            <div style={{fontSize:12,color:"#666",marginBottom:12}}>Transfer Bank — konfirmasi via WhatsApp</div>
+            {BANK_ACCOUNTS.map(b => (
+              <div key={b.bank} onClick={() => setForm({...form,bank:b.bank})} style={{
+                display:"flex",justifyContent:"space-between",alignItems:"center",
+                padding:"12px 16px",border: form.bank===b.bank?"2px solid #8B4513":"1.5px solid #E0D8CE",
+                marginBottom:8,cursor:"pointer",background: form.bank===b.bank?"#FFF8F2":"white",transition:"all 0.15s"
+              }}>
+                <div>
+                  <div style={{fontWeight:600,fontSize:14}}>Bank {b.bank}</div>
+                  <div style={{fontSize:12,color:"#666"}}>{b.no} · a.n. {b.name}</div>
+                </div>
+                <div style={{width:18,height:18,borderRadius:"50%",border:"2px solid "+( form.bank===b.bank?"#8B4513":"#CCC"),background: form.bank===b.bank?"#8B4513":"white",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {form.bank===b.bank && <div style={{width:8,height:8,borderRadius:"50%",background:"white"}} />}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button className="btn-primary" style={{width:"100%",padding:"16px",fontSize:14}} onClick={submitOrder}>
+            BUAT PESANAN & LIHAT STRUK
+          </button>
+        </div>
+      )}
+
+      {/* PAGE: RECEIPT */}
+      {page === "receipt" && order && (
+        <div style={{maxWidth:540,margin:"0 auto",padding:"40px 5%"}} className="fade-in">
+          <div style={{textAlign:"center",marginBottom:32}} className="no-print">
+            <div style={{width:56,height:56,background:"#4CAF50",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",fontSize:24}}>✓</div>
+            <h2 style={{fontFamily:"'Playfair Display'",fontSize:24,fontWeight:700}}>Pesanan Berhasil Dibuat!</h2>
+            <p style={{fontSize:13,color:"#666",marginTop:8}}>Segera lakukan pembayaran dan konfirmasi via WhatsApp</p>
+          </div>
+
+          {/* RECEIPT */}
+          <div ref={receiptRef} style={styles.receipt}>
+            {/* HEADER */}
+            <div style={{textAlign:"center",paddingBottom:16,borderBottom:"2px dashed #C2A882",marginBottom:16}}>
+              <div style={{fontFamily:"'Playfair Display'",fontSize:22,fontWeight:700,color:"#2D1B0E"}}>REKAIN FASHION</div>
+              <div style={{fontSize:11,color:"#8B6914",letterSpacing:2,textTransform:"uppercase"}}>Sustainable Local Fashion</div>
+              <div style={{fontSize:11,color:"#999",marginTop:4}}>rekainfashion.blog · Medan, Sumut</div>
+            </div>
+
+            {/* ORDER INFO */}
+            <div style={{background:"#FFF8F2",padding:"12px 16px",marginBottom:16,borderRadius:4}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{fontSize:12,color:"#666"}}>No. Order</span>
+                <span style={{fontSize:13,fontWeight:700,color:"#8B4513"}}>{order.id}</span>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{fontSize:12,color:"#666"}}>Tanggal</span>
+                <span style={{fontSize:12}}>{order.date}</span>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between"}}>
+                <span style={{fontSize:12,color:"#666"}}>Nama</span>
+                <span style={{fontSize:12,fontWeight:500}}>{order.customer.name}</span>
+              </div>
+            </div>
+
+            {/* ITEMS */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:600,letterSpacing:1,textTransform:"uppercase",color:"#666",marginBottom:10,paddingBottom:6,borderBottom:"1px solid #EEE"}}>DETAIL PRODUK</div>
+              {order.items.map(item => (
+                <div key={item.key} style={{marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between"}}>
+                    <span style={{fontSize:13,fontWeight:500,flex:1}}>{item.name}</span>
+                    <span style={{fontSize:13,fontWeight:600}}>{formatRp(item.price*item.qty)}</span>
+                  </div>
+                  <div style={{fontSize:11,color:"#888"}}>Ukuran {item.size} × {item.qty} pcs @ {formatRp(item.price)}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* TOTALS */}
+            <div style={{borderTop:"1px solid #E8E0D0",paddingTop:12,marginBottom:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6,fontSize:13}}>
+                <span style={{color:"#666"}}>Subtotal</span><span>{formatRp(order.subtotal)}</span>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6,fontSize:13}}>
+                <span style={{color:"#666"}}>Ongkir</span><span>{formatRp(order.shipping)}</span>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:16,fontWeight:700,marginTop:8,paddingTop:8,borderTop:"1.5px solid #2D1B0E"}}>
+                <span>TOTAL BAYAR</span><span style={{color:"#8B4513"}}>{formatRp(order.total)}</span>
+              </div>
+            </div>
+
+            {/* PAYMENT INFO */}
+            <div style={{background:"#2D1B0E",color:"#F5F0E8",padding:"14px 16px",borderRadius:4,marginBottom:16}}>
+              <div style={{fontSize:11,letterSpacing:1,textTransform:"uppercase",color:"#C2A882",marginBottom:8}}>INFO PEMBAYARAN</div>
+              <div style={{fontSize:14,fontWeight:700,marginBottom:2}}>Bank {order.bank.bank}</div>
+              <div style={{fontSize:18,fontWeight:700,letterSpacing:1,marginBottom:2}}>{order.bank.no}</div>
+              <div style={{fontSize:12,color:"#C2A882"}}>a.n. {order.bank.name}</div>
+              <div style={{marginTop:10,fontSize:12,color:"#D4C5B0",borderTop:"1px solid rgba(255,255,255,0.1)",paddingTop:10}}>
+                Transfer tepat <strong style={{color:"#FFD700"}}>{formatRp(order.total)}</strong> dan konfirmasi via WhatsApp
+              </div>
+            </div>
+
+            {/* ALAMAT */}
+            <div style={{fontSize:12,color:"#666",marginBottom:16,lineHeight:1.6}}>
+              <div style={{fontWeight:500,color:"#333",marginBottom:2}}>📦 Alamat Pengiriman:</div>
+              <div>{order.customer.address}</div>
+              <div>WA: {order.customer.phone}</div>
+              {order.customer.note && <div style={{marginTop:4,fontStyle:"italic"}}>Catatan: {order.customer.note}</div>}
+            </div>
+
+            {/* FOOTER */}
+            <div style={{textAlign:"center",paddingTop:12,borderTop:"2px dashed #C2A882",fontSize:11,color:"#999",lineHeight:1.8}}>
+              <div>Terima kasih telah berbelanja di Rekain Fashion! 🌿</div>
+              <div>Setiap pembelian membantu mengurangi limbah tekstil</div>
+              <div style={{marginTop:4,color:"#8B4513"}}>rekainfashion.blog</div>
+            </div>
+          </div>
+
+          {/* ACTION BUTTONS */}
+          <div style={{display:"flex",gap:12,marginTop:20,flexWrap:"wrap"}} className="no-print">
+            <button className="btn-primary" style={{flex:1,padding:14}} onClick={shareWA}>
+              📲 KONFIRMASI VIA WHATSAPP
+            </button>
+            <button className="btn-outline" style={{flex:1,padding:14}} onClick={printReceipt}>
+              🖨️ CETAK STRUK
+            </button>
+          </div>
+          <div style={{textAlign:"center",marginTop:16}} className="no-print">
+            <span style={{fontSize:13,color:"#8B4513",cursor:"pointer"}} onClick={() => setPage("shop")}>← Lanjut belanja</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
-function PCard({ p, i, T, onOpen }) {
-  const [hov, setHov] = useState(false);
+function ProductCard({ product, onSelect }) {
   return (
-    <div className={`fi s${(i%3)+1}`} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} style={{cursor:"pointer"}} onClick={onOpen}>
-      <div style={{background:"var(--warm)",aspectRatio:"3/4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:64,position:"relative",overflow:"hidden",transition:"transform .3s",transform:hov?"scale(1.02)":"scale(1)"}}>
-        {p.img}
-        {p.tag&&<span style={{position:"absolute",top:12,left:12,fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",background:"var(--accent)",color:"#fff",padding:"4px 10px"}}>{p.tag==="New"?T.featNew:T.featBest}</span>}
-        <div style={{position:"absolute",inset:0,background:"rgba(26,26,24,.04)",opacity:hov?1:0,transition:"opacity .3s"}}/>
-        <button style={{position:"absolute",bottom:12,left:"50%",transform:hov?"translateX(-50%) translateY(0)":"translateX(-50%) translateY(40px)",opacity:hov?1:0,transition:"all .25s",background:"var(--ink)",color:"var(--cream)",border:"none",padding:"10px 24px",fontSize:11,letterSpacing:"0.1em",cursor:"pointer",fontFamily:"var(--sans)",whiteSpace:"nowrap"}}>
-          {T.viewDetail}
-        </button>
+    <div className="hover-lift" style={styles.productCard} onClick={onSelect}>
+      <div style={{...styles.productSwatch, background: product.color}}>
+        {product.badge && <span style={styles.badge}>{product.badge}</span>}
+        <div style={styles.productSwatchIcon}>👕</div>
       </div>
-      <div style={{padding:"14px 0"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-          <p style={{fontSize:14}}>{p.name}</p>
-          <p style={{fontFamily:"var(--serif)",fontSize:15,color:"var(--accent)"}}>{fmt(p.price)}</p>
-        </div>
-        <p style={{fontSize:11,color:"var(--muted)",marginTop:2,letterSpacing:"0.06em"}}>{p.cat}</p>
-        <div style={{display:"flex",gap:5,marginTop:8}}>
-          {p.colors.map((c,j)=><div key={j} style={{width:12,height:12,borderRadius:"50%",background:c,border:"1px solid rgba(0,0,0,.1)"}}/>)}
+      <div style={{padding:"16px 16px 20px"}}>
+        <div style={{fontSize:10,color:"#888",letterSpacing:1,textTransform:"uppercase",marginBottom:4}}>{product.category}</div>
+        <div style={{fontFamily:"'Playfair Display'",fontSize:16,fontWeight:600,marginBottom:4}}>{product.name}</div>
+        <div style={{fontSize:12,color:"#777",marginBottom:10,lineHeight:1.5}}>{product.desc}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:16,fontWeight:700,color:"#8B4513"}}>{formatRp(product.price)}</span>
+          <span style={{fontSize:11,color:"#4CAF50"}}>Stok {product.stock}</span>
         </div>
       </div>
     </div>
   );
 }
+
+const styles = {
+  app: { background:"#FAFAF7", minHeight:"100vh", fontFamily:"'DM Sans', sans-serif" },
+  nav: { display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 5%",height:64,background:"#F5F0E8",borderBottom:"1px solid #E8E0D0",position:"sticky",top:0,zIndex:100 },
+  navLeft: { display:"flex",alignItems:"baseline",gap:6,cursor:"pointer" },
+  logo: { fontFamily:"'Playfair Display'",fontSize:22,fontWeight:700,color:"#2D1B0E",letterSpacing:2 },
+  logoSub: { fontSize:10,letterSpacing:3,color:"#8B4513",textTransform:"uppercase" },
+  navLinks: { display:"flex",gap:28 },
+  navLink: { fontSize:13,fontWeight:400,letterSpacing:1,textTransform:"uppercase",cursor:"pointer",paddingBottom:4,transition:"border 0.2s" },
+  navRight: { display:"flex",alignItems:"center",gap:16 },
+  cartBtn: { fontSize:22,cursor:"pointer",position:"relative" },
+  cartBadge: { position:"absolute",top:-8,right:-8,background:"#8B4513",color:"white",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans'" },
+  hero: { position:"relative",minHeight:480,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#2D1B0E 0%,#5C3317 50%,#8B4513 100%)",overflow:"hidden" },
+  heroPattern: { position:"absolute",inset:0,backgroundImage:"repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,0.03) 20px,rgba(255,255,255,0.03) 40px)",pointerEvents:"none" },
+  heroContent: { position:"relative",textAlign:"center",padding:"60px 5%",maxWidth:640 },
+  heroTitle: { fontFamily:"'Playfair Display'",fontSize:"clamp(32px,5vw,52px)",fontWeight:700,color:"#F5F0E8",lineHeight:1.2,marginBottom:16 },
+  heroSub: { fontSize:15,color:"#C2A882",lineHeight:1.8,marginBottom:32,maxWidth:480,margin:"0 auto 32px" },
+  valuesSection: { display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:0,background:"#F5F0E8",borderTop:"1px solid #E8E0D0",borderBottom:"1px solid #E8E0D0" },
+  valueCard: { padding:"32px 24px",textAlign:"center",borderRight:"1px solid #E8E0D0" },
+  productGrid: { display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:20 },
+  productCard: { background:"white",border:"1px solid #EEE",overflow:"hidden" },
+  productSwatch: { height:180,position:"relative",display:"flex",alignItems:"center",justifyContent:"center" },
+  productSwatchIcon: { fontSize:48,opacity:0.3 },
+  badge: { position:"absolute",top:12,left:12,background:"#8B4513",color:"white",fontSize:10,fontWeight:700,letterSpacing:1,padding:"3px 8px",textTransform:"uppercase" },
+  storySection: { display:"grid",gridTemplateColumns:"1fr 1fr",gap:0,background:"#1A0F07",padding:"60px 5%" },
+  storyLeft: { paddingRight:40 },
+  storyRight: { display:"flex",flexDirection:"column",gap:16,justifyContent:"center" },
+  storyTag: { display:"flex",alignItems:"center",gap:12,color:"#C2A882",fontSize:16,fontFamily:"'Playfair Display'",padding:"16px 20px",border:"1px solid rgba(194,170,130,0.2)" },
+  footer: { background:"#0D0906",padding:"40px 5%",textAlign:"center",color:"#F5F0E8" },
+  overlay: { position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:200,display:"flex",justifyContent:"flex-end" },
+  cartSidebar: { background:"white",width:"min(400px,95vw)",height:"100%",display:"flex",flexDirection:"column",overflowY:"auto" },
+  cartHeader: { display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 24px",borderBottom:"1px solid #EEE" },
+  cartItem: { display:"flex",gap:12,padding:"16px 0",borderBottom:"1px solid #F0EAE0",alignItems:"flex-start" },
+  cartFooter: { padding:24,borderTop:"1px solid #EEE",background:"#FAFAF7" },
+  qtyRow: { display:"flex",alignItems:"center",gap:8 },
+  qtyBtn: { width:24,height:24,border:"1px solid #DDD",background:"white",cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans'" },
+  modal: { background:"white",width:"min(400px,95vw)",maxHeight:"90vh",overflowY:"auto",margin:"auto",borderRadius:4 },
+  checkoutBox: { background:"white",border:"1px solid #E8E0D0",padding:20,marginBottom:16,borderRadius:4 },
+  input: { width:"100%",padding:"10px 12px",border:"1.5px solid #E0D8CE",fontSize:13,outline:"none",fontFamily:"'DM Sans'",resize:"vertical",background:"#FAFAF7",borderRadius:2 },
+  receipt: { background:"white",border:"2px solid #E8E0D0",padding:24,fontFamily:"'DM Sans',sans-serif" },
+};
