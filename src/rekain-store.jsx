@@ -226,7 +226,7 @@ function ProductCard({ product, onSelect }) {
 /* ─────────────────────────────────────────────
    MAIN APP
 ───────────────────────────────────────────── */
-export default function RekainFashion() {
+export default function RekainStore() {
   const [page, setPage] = useState("home");
   const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
