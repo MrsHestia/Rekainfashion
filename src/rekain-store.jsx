@@ -1,11 +1,78 @@
-import { useState, useRef } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useInView,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+Baik! Saya akan berikan kode lengkap yang sudah saya sesuaikan dengan **Client Key** Anda.
+
+**Client Key Anda:** `Mid-client-8gPYQxOju-oG9sej`
+
+---
+
+## File 1: `src/main.jsx` - Copy paste ini seluruhnya
+
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import RekainStore from './rekain-store.jsx'
+import './index.css'
+
+// Client Key Midtrans Anda
+const CLIENT_KEY = 'Mid-client-8gPYQxOju-oG9sej'
+
+// URL Midtrans Snap (sandbox untuk testing)
+const MIDTRANS_SCRIPT_URL = 'https://api.sandbox.midtrans.com/v2/assets/js/snap.js'
+
+// Fungsi untuk memuat script Midtrans
+const loadMidtransScript = () => {
+  return new Promise((resolve) => {
+    // Cek apakah script sudah ada
+    if (document.getElementById('midtrans-snap-script')) {
+      resolve(true)
+      return
+    }
+    
+    // Buat script baru
+    const script = document.createElement('script')
+    script.id = 'midtrans-snap-script'
+    script.src = MIDTRANS_SCRIPT_URL
+    script.setAttribute('data-client-key', CLIENT_KEY)
+    
+    script.onload = () => {
+      console.log('Midtrans Snap loaded successfully')
+      resolve(true)
+    }
+    
+    script.onerror = () => {
+      console.error('Failed to load Midtrans Snap')
+      resolve(false)
+    }
+    
+    document.body.appendChild(script)
+  })
+}
+
+// Root element
+const rootElement = document.getElementById('root')
+
+// Load Midtrans dulu, baru render aplikasi
+loadMidtransScript().then(() => {
+  if (rootElement) {
+    ReactDOM.createRoot(rootElement).render(
+      <React.StrictMode>
+        <RekainStore />
+      </React.StrictMode>
+    )
+  } else {
+    console.error('Element dengan id "root" tidak ditemukan')
+  }
+})
+```
+
+---
+
+## File 2: `src/rekain-store.jsx` - Copy paste ini seluruhnya
+
+**Perhatian:** Kode ini panjang, pastikan Anda copy SEMUA dari awal sampai akhir.
+
+```jsx
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 
 /* ============================================================
    DATA PRODUK
@@ -21,7 +88,6 @@ const PRODUCTS = [
     sizes: ["2-3T", "4-5T", "6-7T", "8-9T"],
     color: "#8B4513",
     badge: "Best Seller",
-    image: "/images/product-1.jpg", // nanti ganti dengan foto asli
   },
   {
     id: 2,
@@ -33,7 +99,6 @@ const PRODUCTS = [
     sizes: ["2-3T", "4-5T", "6-7T"],
     color: "#C2552A",
     badge: "New Arrival",
-    image: "/images/product-2.jpg",
   },
   {
     id: 3,
@@ -45,7 +110,6 @@ const PRODUCTS = [
     sizes: ["2-3T", "4-5T", "6-7T", "8-9T", "10T"],
     color: "#4A7A5A",
     badge: null,
-    image: "/images/product-3.jpg",
   },
   {
     id: 4,
@@ -57,7 +121,6 @@ const PRODUCTS = [
     sizes: ["3-4T", "5-6T", "7-8T"],
     color: "#7B3D8C",
     badge: "Limited",
-    image: "/images/product-4.jpg",
   },
   {
     id: 5,
@@ -65,11 +128,10 @@ const PRODUCTS = [
     category: "Kemeja",
     price: 75000,
     stock: 10,
-    desc: "Sederhana tapi berkarakter. Kain perca solid yang dipilih satu per satu untuk kenyamanan maksimal.",
+    desc: "Sederhana tetapi berkarakter. Kain perca solid yang dipilih satu per satu untuk kenyamanan maksimal.",
     sizes: ["2-3T", "4-5T", "6-7T", "8-9T"],
     color: "#2C5F8A",
     badge: null,
-    image: "/images/product-5.jpg",
   },
   {
     id: 6,
@@ -81,43 +143,8 @@ const PRODUCTS = [
     sizes: ["3-4T", "5-6T", "7-8T"],
     color: "#8B6914",
     badge: "Promo",
-    image: "/images/product-6.jpg",
   },
 ];
-
-/* ============================================================
-   METODE PEMBAYARAN
-============================================================ */
-const PAYMENT_METHODS = {
-  qris: {
-    id: "qris",
-    name: "QRIS",
-    icon: "📱",
-    description: "Scan menggunakan OVO, DANA, GoPay, LinkAja, atau aplikasi bank",
-  },
-  virtualAccount: {
-    id: "va",
-    name: "Virtual Account",
-    icon: "🏦",
-    channels: [
-      { code: "bca", name: "BCA", fee: 0 },
-      { code: "bri", name: "BRI", fee: 0 },
-      { code: "mandiri", name: "Mandiri", fee: 0 },
-      { code: "bni", name: "BNI", fee: 0 },
-    ],
-  },
-  ewallet: {
-    id: "ewallet",
-    name: "E-Wallet",
-    icon: "💳",
-    channels: [
-      { code: "ovo", name: "OVO", fee: 0 },
-      { code: "dana", name: "DANA", fee: 0 },
-      { code: "gopay", name: "GoPay", fee: 0 },
-      { code: "linkaja", name: "LinkAja", fee: 0 },
-    ],
-  },
-};
 
 /* ============================================================
    HELPERS
@@ -140,7 +167,7 @@ function generateOrderId() {
 }
 
 /* ============================================================
-   ANIMATION VARIANTS
+   ANIMATION
 ============================================================ */
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -173,9 +200,6 @@ const cardVariant = {
   },
 };
 
-/* ============================================================
-   COMPONENTS
-============================================================ */
 function ScrollReveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -206,20 +230,19 @@ function ProductCard({ product, onSelect }) {
         overflow: "hidden",
         cursor: "pointer",
         border: "1px solid #EEEEEE",
-        transition: "all 0.3s ease",
       }}
     >
-      {/* Image placeholder - nanti ganti dengan gambar asli */}
       <div
         style={{
           height: "240px",
           backgroundColor: product.color,
-          backgroundImage: `url(${product.image})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
           position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
+        <span style={{ fontSize: "48px", opacity: 0.3 }}>👕</span>
         {product.badge && (
           <span
             style={{
@@ -232,7 +255,6 @@ function ProductCard({ product, onSelect }) {
               fontWeight: "600",
               padding: "4px 10px",
               borderRadius: "20px",
-              letterSpacing: "0.5px",
             }}
           >
             {product.badge}
@@ -306,17 +328,13 @@ export default function RekainStore() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderData, setOrderData] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState("qris");
-  const [selectedBank, setSelectedBank] = useState("bca");
-  const [selectedEWallet, setSelectedEWallet] = useState("ovo");
   const [customerForm, setCustomerForm] = useState({
     name: "",
     phone: "",
     address: "",
     note: "",
   });
-
-  const receiptRef = useRef();
+  const [snapReady, setSnapReady] = useState(false);
 
   const categories = ["all", "Kemeja", "Gaun", "Set"];
   const filteredProducts =
@@ -328,6 +346,18 @@ export default function RekainStore() {
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
   const shippingCost = cartTotal > 0 ? 15000 : 0;
   const grandTotal = cartTotal + shippingCost;
+
+  // Cek apakah Midtrans Snap sudah siap
+  useEffect(() => {
+    const checkSnap = () => {
+      if (window.snap) {
+        setSnapReady(true);
+      } else {
+        setTimeout(checkSnap, 500);
+      }
+    };
+    checkSnap();
+  }, []);
 
   const addToCart = (product, size) => {
     if (!size) {
@@ -375,50 +405,113 @@ export default function RekainStore() {
     setCart((prev) => prev.filter((item) => item.cartKey !== cartKey));
   };
 
-  const processOrder = async () => {
-    // Validasi form
+  // Proses pembayaran dengan Midtrans
+  const processPayment = async () => {
     if (!customerForm.name || !customerForm.phone || !customerForm.address) {
       alert("Mohon lengkapi data pengiriman terlebih dahulu.");
       return;
     }
 
+    if (!snapReady) {
+      alert("Sistem pembayaran sedang dimuat, silakan tunggu sebentar.");
+      return;
+    }
+
     setIsProcessing(true);
 
-    // Simulasi proses pembayaran
-    // Di sini nanti akan diintegrasikan dengan API payment gateway
-    setTimeout(() => {
-      const newOrder = {
-        orderId: generateOrderId(),
-        orderDate: new Date().toLocaleString("id-ID"),
-        customer: customerForm,
-        items: [...cart],
-        subtotal: cartTotal,
-        shipping: shippingCost,
-        total: grandTotal,
-        paymentMethod: paymentMethod,
-        paymentDetail:
-          paymentMethod === "va"
-            ? selectedBank
-            : paymentMethod === "ewallet"
-            ? selectedEWallet
-            : "qris",
-        status: "pending",
-      };
+    const orderId = generateOrderId();
+    const newOrder = {
+      orderId: orderId,
+      orderDate: new Date().toLocaleString("id-ID"),
+      customer: customerForm,
+      items: [...cart],
+      subtotal: cartTotal,
+      shipping: shippingCost,
+      total: grandTotal,
+    };
 
-      setOrderData(newOrder);
-      setCurrentPage("payment");
-      setIsProcessing(false);
-      setCart([]);
-    }, 1500);
-  };
+    setOrderData(newOrder);
 
-  const simulatePayment = () => {
-    // Simulasi sukses pembayaran
-    setIsProcessing(true);
-    setTimeout(() => {
-      setCurrentPage("receipt");
+    // Parameter untuk Midtrans
+    const transactionDetails = {
+      transaction_details: {
+        order_id: orderId,
+        gross_amount: grandTotal,
+      },
+      customer_details: {
+        first_name: customerForm.name,
+        email: `${customerForm.phone}@customer.com`,
+        phone: customerForm.phone,
+        billing_address: {
+          address: customerForm.address,
+        },
+        shipping_address: {
+          address: customerForm.address,
+        },
+      },
+      item_details: [
+        ...cart.map((item) => ({
+          id: item.id.toString(),
+          name: `${item.name} (${item.selectedSize})`,
+          price: item.price,
+          quantity: item.quantity,
+          brand: "Rekain Fashion",
+          category: item.category,
+        })),
+        {
+          id: "SHIPPING",
+          name: "Ongkos Kirim",
+          price: shippingCost,
+          quantity: 1,
+          brand: "Rekain Fashion",
+          category: "Shipping",
+        },
+      ],
+      enabled_payments: [
+        "credit_card",
+        "bank_transfer",
+        "qris",
+        "gopay",
+        "shopeepay",
+        "ovo",
+        "dana",
+        "linkaja",
+      ],
+      bank_transfer: {
+        banks: ["bca", "bri", "mandiri", "bni"],
+      },
+    };
+
+    try {
+      // Buka popup pembayaran Midtrans
+      window.snap.pay(transactionDetails, {
+        onSuccess: (result) => {
+          console.log("Payment Success:", result);
+          setIsProcessing(false);
+          setCurrentPage("receipt");
+          setCart([]);
+          alert("Pembayaran berhasil! Terima kasih sudah berbelanja.");
+        },
+        onPending: (result) => {
+          console.log("Payment Pending:", result);
+          setIsProcessing(false);
+          alert("Menunggu pembayaran. Silakan selesaikan pembayaran Anda.");
+        },
+        onError: (result) => {
+          console.log("Payment Error:", result);
+          setIsProcessing(false);
+          alert("Pembayaran gagal. Silakan coba lagi.");
+        },
+        onClose: () => {
+          console.log("Payment popup closed");
+          setIsProcessing(false);
+        },
+      });
+    } catch (error) {
+      console.error("Payment error:", error);
       setIsProcessing(false);
-    }, 1500);
+      alert("Terjadi kesalahan. Silakan coba lagi.");
+    }
   };
 
   return (
@@ -500,7 +593,6 @@ export default function RekainStore() {
               style={styles.cartBadge}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500 }}
             >
               {cartQuantity}
             </motion.span>
@@ -528,10 +620,7 @@ export default function RekainStore() {
             >
               <div style={styles.cartHeader}>
                 <h3 style={styles.cartTitle}>Keranjang Belanja</h3>
-                <button
-                  style={styles.closeButton}
-                  onClick={() => setIsCartOpen(false)}
-                >
+                <button style={styles.closeButton} onClick={() => setIsCartOpen(false)}>
                   ✕
                 </button>
               </div>
@@ -551,9 +640,6 @@ export default function RekainStore() {
                         key={item.cartKey}
                         style={styles.cartItem}
                         layout
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, height: 0 }}
                       >
                         <div
                           style={{
@@ -652,8 +738,13 @@ export default function RekainStore() {
                 style={{
                   ...styles.modalImage,
                   backgroundColor: selectedProduct.color,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
+              >
+                <span style={{ fontSize: "64px", opacity: 0.3 }}>👕</span>
+              </div>
               <div style={styles.modalContent}>
                 <div style={styles.modalHeader}>
                   <div>
@@ -672,7 +763,9 @@ export default function RekainStore() {
 
                 <p style={styles.modalDescription}>{selectedProduct.desc}</p>
 
-                <div style={styles.modalPrice}>{formatRupiah(selectedProduct.price)}</div>
+                <div style={styles.modalPrice}>
+                  {formatRupiah(selectedProduct.price)}
+                </div>
 
                 <div style={styles.sizeSection}>
                   <label style={styles.sizeLabel}>Pilih Ukuran</label>
@@ -725,9 +818,8 @@ export default function RekainStore() {
         )}
       </AnimatePresence>
 
-      {/* Pages */}
+      {/* Home Page */}
       <AnimatePresence mode="wait">
-        {/* Home Page */}
         {currentPage === "home" && (
           <motion.div
             key="home"
@@ -735,7 +827,6 @@ export default function RekainStore() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {/* Hero Section */}
             <section style={styles.heroSection}>
               <div style={styles.heroOverlay} />
               <div style={styles.heroContent}>
@@ -782,7 +873,6 @@ export default function RekainStore() {
               </div>
             </section>
 
-            {/* Values Section */}
             <section style={styles.valuesSection}>
               {[
                 {
@@ -816,7 +906,6 @@ export default function RekainStore() {
               ))}
             </section>
 
-            {/* Featured Products */}
             <section style={styles.productsSection}>
               <ScrollReveal>
                 <div style={styles.sectionHeader}>
@@ -856,7 +945,6 @@ export default function RekainStore() {
               </div>
             </section>
 
-            {/* Footer */}
             <footer style={styles.footer}>
               <div style={styles.footerContent}>
                 <div style={styles.footerLogo}>REKAIN FASHION</div>
@@ -1026,9 +1114,9 @@ export default function RekainStore() {
                     style={styles.processButton}
                     whileHover={{ backgroundColor: "#A04420" }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={processOrder}
+                    onClick={processPayment}
                   >
-                    Lanjut ke Pembayaran
+                    Bayar Sekarang
                   </motion.button>
                 </div>
               </div>
@@ -1036,61 +1124,11 @@ export default function RekainStore() {
           </motion.div>
         )}
 
-        {/* Payment Page */}
-        {currentPage === "payment" && orderData && (
+        {/* Receipt Page */}
+        {currentPage === "receipt" && orderData && (
           <motion.div
-            key="payment"
-            style={styles.checkoutPage}
+            key="receipt"
+            style={styles.receiptPage}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <div style={styles.checkoutContainer}>
-              <h1 style={styles.checkoutTitle}>Pilih Metode Pembayaran</h1>
-              <p style={styles.checkoutSubtitle}>
-                Pilih metode pembayaran yang paling nyaman untuk Anda
-              </p>
-
-              <div style={styles.paymentGrid}>
-                <div style={styles.paymentMethods}>
-                  {/* QRIS */}
-                  <div
-                    style={{
-                      ...styles.paymentOption,
-                      ...(paymentMethod === "qris" && styles.paymentOptionActive),
-                    }}
-                    onClick={() => setPaymentMethod("qris")}
-                  >
-                    <div style={styles.paymentOptionHeader}>
-                      <span style={styles.paymentOptionIcon}>📱</span>
-                      <div>
-                        <h3 style={styles.paymentOptionTitle}>QRIS</h3>
-                        <p style={styles.paymentOptionDesc}>
-                          Scan menggunakan OVO, DANA, GoPay, LinkAja, atau mobile banking
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Virtual Account */}
-                  <div
-                    style={{
-                      ...styles.paymentOption,
-                      ...(paymentMethod === "va" && styles.paymentOptionActive),
-                    }}
-                    onClick={() => setPaymentMethod("va")}
-                  >
-                    <div style={styles.paymentOptionHeader}>
-                      <span style={styles.paymentOptionIcon}>🏦</span>
-                      <div>
-                        <h3 style={styles.paymentOptionTitle}>Virtual Account</h3>
-                        <p style={styles.paymentOptionDesc}>
-                          Transfer via BCA, BRI, Mandiri, atau BNI
-                        </p>
-                      </div>
-                    </div>
-
-                    {paymentMethod === "va" && (
-                      <motion.div
-                        style={styles.paymentChannels}
-                        initial={{ opacity: 0
+            exit={{ opacity:
