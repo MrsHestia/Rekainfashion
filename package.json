@@ -1,5 +1,7 @@
-"dependencies": {
-  "react": "^18.2.0",
-  "react-dom": "^18.2.0",
-  "framer-motion": "^11.0.0" 
+"scripts": {
+  "build": "next build"   // kalau pake Next.js
+  // atau
+  "build": "react-scripts build"  // kalau pake Create React App
+  // atau
+  "build": "vite build"   // kalau pake Vite
 }
