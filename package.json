@@ -1,7 +1,4 @@
 "scripts": {
-  "build": "next build"   // kalau pake Next.js
-  // atau
-  "build": "react-scripts build"  // kalau pake Create React App
-  // atau
-  "build": "vite build"   // kalau pake Vite
-}
+  "build": "next build"   
+  "build": "react-scripts build"  
+  "build": "vite build"  
