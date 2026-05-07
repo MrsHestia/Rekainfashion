@@ -1,4 +1,5 @@
-// Ubah dari RekainStore menjadi RekainFashion agar sesuai dengan isi filenya
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import RekainFashion from './rekain-store.jsx' 
 
 const rootElement = document.getElementById('root');
