@@ -1,76 +1,3 @@
-Baik! Saya akan berikan kode lengkap yang sudah saya sesuaikan dengan **Client Key** Anda.
-
-**Client Key Anda:** `Mid-client-8gPYQxOju-oG9sej`
-
----
-
-## File 1: `src/main.jsx` - Copy paste ini seluruhnya
-
-```jsx
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import RekainStore from './rekain-store.jsx'
-import './index.css'
-
-// Client Key Midtrans Anda
-const CLIENT_KEY = 'Mid-client-8gPYQxOju-oG9sej'
-
-// URL Midtrans Snap (sandbox untuk testing)
-const MIDTRANS_SCRIPT_URL = 'https://api.sandbox.midtrans.com/v2/assets/js/snap.js'
-
-// Fungsi untuk memuat script Midtrans
-const loadMidtransScript = () => {
-  return new Promise((resolve) => {
-    // Cek apakah script sudah ada
-    if (document.getElementById('midtrans-snap-script')) {
-      resolve(true)
-      return
-    }
-    
-    // Buat script baru
-    const script = document.createElement('script')
-    script.id = 'midtrans-snap-script'
-    script.src = MIDTRANS_SCRIPT_URL
-    script.setAttribute('data-client-key', CLIENT_KEY)
-    
-    script.onload = () => {
-      console.log('Midtrans Snap loaded successfully')
-      resolve(true)
-    }
-    
-    script.onerror = () => {
-      console.error('Failed to load Midtrans Snap')
-      resolve(false)
-    }
-    
-    document.body.appendChild(script)
-  })
-}
-
-// Root element
-const rootElement = document.getElementById('root')
-
-// Load Midtrans dulu, baru render aplikasi
-loadMidtransScript().then(() => {
-  if (rootElement) {
-    ReactDOM.createRoot(rootElement).render(
-      <React.StrictMode>
-        <RekainStore />
-      </React.StrictMode>
-    )
-  } else {
-    console.error('Element dengan id "root" tidak ditemukan')
-  }
-})
-```
-
----
-
-## File 2: `src/rekain-store.jsx` - Copy paste ini seluruhnya
-
-**Perhatian:** Kode ini panjang, pastikan Anda copy SEMUA dari awal sampai akhir.
-
-```jsx
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 
@@ -147,6 +74,31 @@ const PRODUCTS = [
 ];
 
 /* ============================================================
+   SIZE GUIDE DATA
+============================================================ */
+const SIZE_GUIDE_DATA = {
+  title: "Panduan Ukuran Pakaian Anak",
+  description: "Pilih ukuran yang pas untuk si kecil agar nyaman beraktivitas",
+  tips: [
+    "Ukur lingkar dada, panjang badan, dan berat badan anak sebelum memilih",
+    "Jika anak di antara dua ukuran, pilih ukuran yang lebih besar",
+    "Untuk anak yang aktif, pilih ukuran yang sedikit longgar",
+    "Setiap merek mungkin memiliki standar ukuran berbeda",
+  ],
+  measurements: [
+    { usia: "1-2 tahun", tinggi: "75-85 cm", berat: "9-12 kg", dada: "50-52 cm" },
+    { usia: "2-3 tahun", tinggi: "85-95 cm", berat: "12-14 kg", dada: "52-54 cm" },
+    { usia: "3-4 tahun", tinggi: "95-105 cm", berat: "14-16 kg", dada: "54-56 cm" },
+    { usia: "4-5 tahun", tinggi: "105-115 cm", berat: "16-18 kg", dada: "56-58 cm" },
+    { usia: "5-6 tahun", tinggi: "115-125 cm", berat: "18-20 kg", dada: "58-60 cm" },
+    { usia: "6-7 tahun", tinggi: "125-135 cm", berat: "20-23 kg", dada: "60-63 cm" },
+    { usia: "7-8 tahun", tinggi: "135-145 cm", berat: "23-26 kg", dada: "63-66 cm" },
+    { usia: "8-9 tahun", tinggi: "145-150 cm", berat: "26-30 kg", dada: "66-69 cm" },
+    { usia: "9-10 tahun", tinggi: "150-155 cm", berat: "30-34 kg", dada: "69-72 cm" },
+  ],
+};
+
+/* ============================================================
    HELPERS
 ============================================================ */
 function formatRupiah(amount) {
@@ -200,6 +152,9 @@ const cardVariant = {
   },
 };
 
+/* ============================================================
+   SCROLL REVEAL COMPONENT
+============================================================ */
 function ScrollReveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -218,6 +173,9 @@ function ScrollReveal({ children, delay = 0, className = "" }) {
   );
 }
 
+/* ============================================================
+   PRODUCT CARD COMPONENT
+============================================================ */
 function ProductCard({ product, onSelect }) {
   return (
     <motion.div
@@ -317,6 +275,89 @@ function ProductCard({ product, onSelect }) {
 }
 
 /* ============================================================
+   SIZE GUIDE MODAL COMPONENT
+============================================================ */
+function SizeGuideModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+
+  return (
+    <motion.div
+      style={styles.overlay}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        style={styles.sizeGuideModal}
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        transition={{ type: "spring", damping: 25 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={styles.sizeGuideHeader}>
+          <h2 style={styles.sizeGuideTitle}>{SIZE_GUIDE_DATA.title}</h2>
+          <button style={styles.closeButton} onClick={onClose}>✕</button>
+        </div>
+        
+        <p style={styles.sizeGuideDescription}>{SIZE_GUIDE_DATA.description}</p>
+
+        <div style={styles.sizeGuideTips}>
+          <h4 style={styles.sizeGuideSubtitle}>Tips Memilih Ukuran:</h4>
+          <ul style={styles.sizeGuideTipList}>
+            {SIZE_GUIDE_DATA.tips.map((tip, i) => (
+              <li key={i} style={styles.sizeGuideTipItem}>• {tip}</li>
+            ))}
+          </ul>
+        </div>
+
+        <h4 style={styles.sizeGuideSubtitle}>Tabel Ukuran (Rekomendasi):</h4>
+        
+        <div style={styles.sizeGuideTableWrapper}>
+          <table style={styles.sizeGuideTable}>
+            <thead>
+              <tr>
+                <th style={styles.sizeGuideTh}>Usia</th>
+                <th style={styles.sizeGuideTh}>Tinggi Badan</th>
+                <th style={styles.sizeGuideTh}>Berat Badan</th>
+                <th style={styles.sizeGuideTh}>Lingkar Dada</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SIZE_GUIDE_DATA.measurements.map((row, i) => (
+                <tr key={i}>
+                  <td style={styles.sizeGuideTd}>{row.usia}</td>
+                  <td style={styles.sizeGuideTd}>{row.tinggi}</td>
+                  <td style={styles.sizeGuideTd}>{row.berat}</td>
+                  <td style={styles.sizeGuideTd}>{row.dada}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={styles.sizeGuideNote}>
+          <p style={styles.sizeGuideNoteText}>
+            *Catatan: Tabel ini adalah panduan umum. Setiap anak memiliki bentuk tubuh yang berbeda. 
+            Jika ragu, pilih ukuran yang lebih besar atau hubungi kami.
+          </p>
+        </div>
+
+        <motion.button
+          style={styles.sizeGuideCloseButton}
+          whileHover={{ backgroundColor: "#A04420" }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onClose}
+        >
+          Tutup
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ============================================================
    MAIN APP
 ============================================================ */
 export default function RekainStore() {
@@ -328,6 +369,7 @@ export default function RekainStore() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderData, setOrderData] = useState(null);
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [customerForm, setCustomerForm] = useState({
     name: "",
     phone: "",
@@ -347,7 +389,6 @@ export default function RekainStore() {
   const shippingCost = cartTotal > 0 ? 15000 : 0;
   const grandTotal = cartTotal + shippingCost;
 
-  // Cek apakah Midtrans Snap sudah siap
   useEffect(() => {
     const checkSnap = () => {
       if (window.snap) {
@@ -405,7 +446,6 @@ export default function RekainStore() {
     setCart((prev) => prev.filter((item) => item.cartKey !== cartKey));
   };
 
-  // Proses pembayaran dengan Midtrans
   const processPayment = async () => {
     if (!customerForm.name || !customerForm.phone || !customerForm.address) {
       alert("Mohon lengkapi data pengiriman terlebih dahulu.");
@@ -432,7 +472,6 @@ export default function RekainStore() {
 
     setOrderData(newOrder);
 
-    // Parameter untuk Midtrans
     const transactionDetails = {
       transaction_details: {
         order_id: orderId,
@@ -483,7 +522,6 @@ export default function RekainStore() {
     };
 
     try {
-      // Buka popup pembayaran Midtrans
       window.snap.pay(transactionDetails, {
         onSuccess: (result) => {
           console.log("Payment Success:", result);
@@ -768,7 +806,15 @@ export default function RekainStore() {
                 </div>
 
                 <div style={styles.sizeSection}>
-                  <label style={styles.sizeLabel}>Pilih Ukuran</label>
+                  <div style={styles.sizeSectionHeader}>
+                    <label style={styles.sizeLabel}>Pilih Ukuran</label>
+                    <button
+                      style={styles.sizeGuideLink}
+                      onClick={() => setShowSizeGuide(true)}
+                    >
+                      📏 Panduan Ukuran
+                    </button>
+                  </div>
                   <div style={styles.sizeOptions}>
                     {selectedProduct.sizes.map((size) => (
                       <button
@@ -799,6 +845,16 @@ export default function RekainStore() {
         )}
       </AnimatePresence>
 
+      {/* Size Guide Modal */}
+      <AnimatePresence>
+        {showSizeGuide && (
+          <SizeGuideModal
+            isOpen={showSizeGuide}
+            onClose={() => setShowSizeGuide(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Loading Overlay */}
       <AnimatePresence>
         {isProcessing && (
@@ -818,8 +874,9 @@ export default function RekainStore() {
         )}
       </AnimatePresence>
 
-      {/* Home Page */}
+      {/* Pages */}
       <AnimatePresence mode="wait">
+        {/* Home Page */}
         {currentPage === "home" && (
           <motion.div
             key="home"
@@ -1131,4 +1188,1026 @@ export default function RekainStore() {
             style={styles.receiptPage}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity:
+            exit={{ opacity: 0 }}
+          >
+            <div style={styles.receiptContainer}>
+              <div style={styles.receiptHeader}>
+                <h1 style={styles.receiptLogo}>REKAIN FASHION</h1>
+                <p style={styles.receiptTagline}>Sustainable Local Fashion</p>
+                <p style={styles.receiptMeta}>Medan, Sumatera Utara</p>
+              </div>
+
+              <div style={styles.receiptInfo}>
+                <div style={styles.receiptInfoRow}>
+                  <span>Nomor Order</span>
+                  <strong>{orderData.orderId}</strong>
+                </div>
+                <div style={styles.receiptInfoRow}>
+                  <span>Tanggal</span>
+                  <span>{orderData.orderDate}</span>
+                </div>
+                <div style={styles.receiptInfoRow}>
+                  <span>Nama</span>
+                  <span>{orderData.customer.name}</span>
+                </div>
+              </div>
+
+              <div style={styles.receiptItems}>
+                <h3 style={styles.receiptSectionTitle}>Detail Produk</h3>
+                {orderData.items.map((item) => (
+                  <div key={item.cartKey} style={styles.receiptItem}>
+                    <div>
+                      <p style={styles.receiptItemName}>{item.name}</p>
+                      <p style={styles.receiptItemMeta}>
+                        Ukuran {item.selectedSize} x {item.quantity}
+                      </p>
+                    </div>
+                    <p style={styles.receiptItemPrice}>
+                      {formatRupiah(item.price * item.quantity)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div style={styles.receiptTotals}>
+                <div style={styles.receiptRow}>
+                  <span>Subtotal</span>
+                  <span>{formatRupiah(orderData.subtotal)}</span>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Ongkos Kirim</span>
+                  <span>{formatRupiah(orderData.shipping)}</span>
+                </div>
+                <div style={styles.receiptGrandTotal}>
+                  <span>Total</span>
+                  <span style={{ color: "#C2552A" }}>
+                    {formatRupiah(orderData.total)}
+                  </span>
+                </div>
+              </div>
+
+              <div style={styles.receiptAddress}>
+                <h4 style={styles.receiptAddressTitle}>Alamat Pengiriman</h4>
+                <p>{orderData.customer.address}</p>
+                <p>WhatsApp: {orderData.customer.phone}</p>
+                {orderData.customer.note && (
+                  <p style={styles.receiptNote}>Catatan: {orderData.customer.note}</p>
+                )}
+              </div>
+
+              <div style={styles.receiptFooter}>
+                <p>Terima kasih sudah berbelanja di Rekain Fashion</p>
+                <p>Pesanan akan diproses setelah pembayaran terverifikasi</p>
+              </div>
+
+              <motion.button
+                style={styles.receiptCloseButton}
+                whileHover={{ backgroundColor: "#A04420" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setCurrentPage("home")}
+              >
+                Kembali ke Beranda
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ============================================================
+   STYLES
+============================================================ */
+const styles = {
+  appContainer: {
+    minHeight: "100vh",
+    backgroundColor: "#FAFAF7",
+  },
+
+  // Navigation
+  navbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0 5%",
+    height: "70px",
+    backgroundColor: "#FFFFFF",
+    borderBottom: "1px solid #F0EDE8",
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+  },
+  logoArea: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: "8px",
+    cursor: "pointer",
+  },
+  logo: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#2D1B0E",
+    letterSpacing: "2px",
+  },
+  logoSub: {
+    fontSize: "10px",
+    letterSpacing: "3px",
+    color: "#C2552A",
+    textTransform: "uppercase",
+  },
+  navLinks: {
+    display: "flex",
+    gap: "32px",
+  },
+  navLink: {
+    background: "none",
+    border: "none",
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#555555",
+    cursor: "pointer",
+    padding: "8px 0",
+    transition: "color 0.2s",
+  },
+  navLinkActive: {
+    color: "#C2552A",
+    borderBottom: "2px solid #C2552A",
+  },
+  cartButton: {
+    background: "none",
+    border: "none",
+    fontSize: "22px",
+    cursor: "pointer",
+    position: "relative",
+  },
+  cartBadge: {
+    position: "absolute",
+    top: "-8px",
+    right: "-12px",
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    fontSize: "10px",
+    fontWeight: "600",
+    width: "18px",
+    height: "18px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // Overlay & Modal umum
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    zIndex: 200,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+  closeButton: {
+    background: "none",
+    border: "none",
+    fontSize: "20px",
+    cursor: "pointer",
+    color: "#888888",
+  },
+
+  // Cart Sidebar
+  cartSidebar: {
+    width: "400px",
+    maxWidth: "90vw",
+    height: "100%",
+    backgroundColor: "#FFFFFF",
+    display: "flex",
+    flexDirection: "column",
+  },
+  cartHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "20px",
+    borderBottom: "1px solid #EEEEEE",
+  },
+  cartTitle: {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+  },
+  emptyCart: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    color: "#AAAAAA",
+  },
+  cartItems: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "20px",
+  },
+  cartItem: {
+    display: "flex",
+    gap: "12px",
+    padding: "12px 0",
+    borderBottom: "1px solid #F0EDE8",
+  },
+  cartItemImage: {
+    width: "60px",
+    height: "60px",
+    borderRadius: "8px",
+  },
+  cartItemDetails: {
+    flex: 1,
+  },
+  cartItemName: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "4px",
+  },
+  cartItemMeta: {
+    fontSize: "12px",
+    color: "#888888",
+    marginBottom: "4px",
+  },
+  cartItemPrice: {
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#C2552A",
+  },
+  cartItemActions: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: "8px",
+  },
+  quantityControl: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  quantityButton: {
+    width: "28px",
+    height: "28px",
+    borderRadius: "6px",
+    border: "1px solid #DDDDDD",
+    background: "#FFFFFF",
+    cursor: "pointer",
+  },
+  quantityValue: {
+    fontSize: "14px",
+    fontWeight: "500",
+    minWidth: "24px",
+    textAlign: "center",
+  },
+  removeButton: {
+    background: "none",
+    border: "none",
+    fontSize: "11px",
+    color: "#CCCCCC",
+    cursor: "pointer",
+  },
+  cartFooter: {
+    padding: "20px",
+    borderTop: "1px solid #EEEEEE",
+    backgroundColor: "#FAFAF7",
+  },
+  cartTotalRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "8px",
+    fontSize: "13px",
+    color: "#666666",
+  },
+  cartGrandTotal: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "12px",
+    paddingTop: "12px",
+    borderTop: "1px solid #EEEEEE",
+    fontSize: "16px",
+    fontWeight: "700",
+  },
+  checkoutButton: {
+    width: "100%",
+    padding: "14px",
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "16px",
+  },
+
+  // Product Modal
+  productModal: {
+    width: "90%",
+    maxWidth: "500px",
+    maxHeight: "90vh",
+    backgroundColor: "#FFFFFF",
+    borderRadius: "16px",
+    overflowY: "auto",
+    margin: "auto",
+  },
+  modalImage: {
+    height: "200px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalContent: {
+    padding: "24px",
+  },
+  modalHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: "12px",
+  },
+  modalCategory: {
+    fontSize: "11px",
+    color: "#AAAAAA",
+    letterSpacing: "1px",
+    textTransform: "uppercase",
+  },
+  modalTitle: {
+    fontSize: "22px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginTop: "4px",
+  },
+  modalDescription: {
+    fontSize: "13px",
+    color: "#666666",
+    lineHeight: "1.6",
+    marginBottom: "16px",
+  },
+  modalPrice: {
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#C2552A",
+    marginBottom: "20px",
+  },
+  sizeSection: {
+    marginBottom: "24px",
+  },
+  sizeSectionHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "10px",
+  },
+  sizeLabel: {
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#333333",
+  },
+  sizeGuideLink: {
+    background: "none",
+    border: "none",
+    fontSize: "11px",
+    color: "#C2552A",
+    textDecoration: "underline",
+    cursor: "pointer",
+  },
+  sizeOptions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+  },
+  sizeButton: {
+    padding: "8px 16px",
+    border: "1.5px solid #DDDDDD",
+    background: "#FFFFFF",
+    borderRadius: "8px",
+    fontSize: "12px",
+    cursor: "pointer",
+    transition: "all 0.2s",
+  },
+  sizeButtonActive: {
+    borderColor: "#C2552A",
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+  },
+  addToCartButton: {
+    width: "100%",
+    padding: "14px",
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+
+  // Size Guide Modal
+  sizeGuideModal: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: "16px",
+    width: "90%",
+    maxWidth: "700px",
+    maxHeight: "85vh",
+    overflowY: "auto",
+    padding: "24px",
+    margin: "auto",
+  },
+  sizeGuideHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "16px",
+    borderBottom: "1px solid #EEEEEE",
+    paddingBottom: "12px",
+  },
+  sizeGuideTitle: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "22px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+  },
+  sizeGuideDescription: {
+    fontSize: "13px",
+    color: "#666666",
+    marginBottom: "20px",
+    lineHeight: "1.6",
+  },
+  sizeGuideTips: {
+    backgroundColor: "#FFF8F2",
+    padding: "16px",
+    borderRadius: "12px",
+    marginBottom: "20px",
+  },
+  sizeGuideSubtitle: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "10px",
+  },
+  sizeGuideTipList: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+  },
+  sizeGuideTipItem: {
+    fontSize: "13px",
+    color: "#555555",
+    marginBottom: "8px",
+    paddingLeft: "8px",
+  },
+  sizeGuideTableWrapper: {
+    overflowX: "auto",
+    marginBottom: "20px",
+  },
+  sizeGuideTable: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: "12px",
+  },
+  sizeGuideTh: {
+    backgroundColor: "#F5F0E8",
+    padding: "10px 8px",
+    textAlign: "left",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    borderBottom: "1px solid #E8E0D0",
+  },
+  sizeGuideTd: {
+    padding: "8px",
+    borderBottom: "1px solid #EEEEEE",
+    color: "#555555",
+  },
+  sizeGuideNote: {
+    backgroundColor: "#FAFAF7",
+    padding: "12px",
+    borderRadius: "8px",
+    marginBottom: "20px",
+  },
+  sizeGuideNoteText: {
+    fontSize: "11px",
+    color: "#888888",
+    lineHeight: "1.5",
+    margin: 0,
+  },
+  sizeGuideCloseButton: {
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    border: "none",
+    padding: "12px 24px",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    width: "100%",
+  },
+
+  // Loading
+  loadingOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    zIndex: 300,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "16px",
+  },
+  loadingSpinner: {
+    width: "40px",
+    height: "40px",
+    border: "3px solid #F0EDE8",
+    borderTopColor: "#C2552A",
+    borderRadius: "50%",
+  },
+  loadingText: {
+    fontSize: "14px",
+    color: "#666666",
+  },
+
+  // Hero Section
+  heroSection: {
+    position: "relative",
+    minHeight: "500px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    background: "linear-gradient(135deg, #2D1B0E 0%, #4A2A1A 100%)",
+  },
+  heroOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "radial-gradient(circle at 30% 50%, rgba(194,85,42,0.1) 0%, transparent 70%)",
+  },
+  heroContent: {
+    position: "relative",
+    padding: "60px 20px",
+    maxWidth: "700px",
+    margin: "0 auto",
+  },
+  heroBadge: {
+    display: "inline-block",
+    fontSize: "11px",
+    letterSpacing: "3px",
+    color: "#C2A882",
+    textTransform: "uppercase",
+    marginBottom: "20px",
+  },
+  heroTitle: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "clamp(32px, 5vw, 48px)",
+    fontWeight: "600",
+    color: "#FFFFFF",
+    lineHeight: "1.2",
+    marginBottom: "20px",
+  },
+  heroSubtitle: {
+    fontSize: "15px",
+    color: "#D4C5B0",
+    lineHeight: "1.7",
+    marginBottom: "32px",
+    maxWidth: "500px",
+    margin: "0 auto 32px",
+  },
+  heroButton: {
+    padding: "12px 32px",
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    border: "none",
+    borderRadius: "40px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+
+  // Values Section
+  valuesSection: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    backgroundColor: "#FFFFFF",
+    borderBottom: "1px solid #F0EDE8",
+  },
+  valueCard: {
+    padding: "48px 24px",
+    textAlign: "center",
+    borderRight: "1px solid #F0EDE8",
+  },
+  valueIcon: {
+    fontSize: "36px",
+    marginBottom: "16px",
+  },
+  valueTitle: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "8px",
+  },
+  valueDescription: {
+    fontSize: "13px",
+    color: "#888888",
+    lineHeight: "1.6",
+  },
+
+  // Products Section
+  productsSection: {
+    padding: "80px 5%",
+  },
+  sectionHeader: {
+    textAlign: "center",
+    marginBottom: "48px",
+  },
+  sectionBadge: {
+    fontSize: "11px",
+    letterSpacing: "3px",
+    color: "#C2552A",
+    textTransform: "uppercase",
+    display: "block",
+    marginBottom: "12px",
+  },
+  sectionTitle: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "32px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "12px",
+  },
+  sectionSubtitle: {
+    fontSize: "14px",
+    color: "#888888",
+    maxWidth: "500px",
+    margin: "0 auto",
+  },
+  productGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "24px",
+  },
+  viewAllContainer: {
+    textAlign: "center",
+    marginTop: "48px",
+  },
+  viewAllButton: {
+    padding: "12px 32px",
+    backgroundColor: "transparent",
+    color: "#C2552A",
+    border: "2px solid #C2552A",
+    borderRadius: "40px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+
+  // Footer
+  footer: {
+    backgroundColor: "#2D1B0E",
+    padding: "48px 20px",
+    textAlign: "center",
+  },
+  footerContent: {
+    maxWidth: "600px",
+    margin: "0 auto",
+  },
+  footerLogo: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "24px",
+    fontWeight: "600",
+    color: "#FFFFFF",
+    letterSpacing: "2px",
+    marginBottom: "12px",
+  },
+  footerTagline: {
+    fontSize: "12px",
+    color: "#C2A882",
+    marginBottom: "16px",
+  },
+  footerCopyright: {
+    fontSize: "11px",
+    color: "#666666",
+  },
+
+  // Shop Page
+  shopPage: {
+    padding: "48px 5%",
+  },
+  shopHeader: {
+    textAlign: "center",
+    marginBottom: "40px",
+  },
+  shopTitle: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "36px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "8px",
+  },
+  shopSubtitle: {
+    fontSize: "14px",
+    color: "#888888",
+  },
+  categoryFilter: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "12px",
+    marginBottom: "40px",
+    flexWrap: "wrap",
+  },
+  filterButton: {
+    padding: "8px 20px",
+    backgroundColor: "#FFFFFF",
+    color: "#666666",
+    border: "1.5px solid #EEEEEE",
+    borderRadius: "30px",
+    fontSize: "13px",
+    cursor: "pointer",
+    transition: "all 0.2s",
+  },
+  filterButtonActive: {
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    borderColor: "#C2552A",
+  },
+
+  // Checkout Page
+  checkoutPage: {
+    padding: "48px 5%",
+    minHeight: "calc(100vh - 70px)",
+  },
+  checkoutContainer: {
+    maxWidth: "1000px",
+    margin: "0 auto",
+  },
+  checkoutTitle: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "28px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "8px",
+  },
+  checkoutSubtitle: {
+    fontSize: "13px",
+    color: "#888888",
+    marginBottom: "32px",
+  },
+  checkoutGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 380px",
+    gap: "32px",
+  },
+  checkoutForm: {
+    backgroundColor: "#FFFFFF",
+    padding: "24px",
+    borderRadius: "16px",
+    border: "1px solid #F0EDE8",
+  },
+  formGroup: {
+    marginBottom: "20px",
+  },
+  formLabel: {
+    display: "block",
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#333333",
+    marginBottom: "8px",
+  },
+  formInput: {
+    width: "100%",
+    padding: "12px",
+    border: "1.5px solid #EEEEEE",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  formTextarea: {
+    width: "100%",
+    padding: "12px",
+    border: "1.5px solid #EEEEEE",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontFamily: "'DM Sans', sans-serif",
+    resize: "vertical",
+  },
+  orderSummary: {
+    backgroundColor: "#FFFFFF",
+    padding: "24px",
+    borderRadius: "16px",
+    border: "1px solid #F0EDE8",
+    height: "fit-content",
+  },
+  summaryTitle: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "16px",
+    paddingBottom: "12px",
+    borderBottom: "1px solid #F0EDE8",
+  },
+  summaryItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "12px",
+  },
+  summaryItemName: {
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#333333",
+  },
+  summaryItemMeta: {
+    fontSize: "11px",
+    color: "#AAAAAA",
+  },
+  summaryItemPrice: {
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#C2552A",
+  },
+  summaryDivider: {
+    height: "1px",
+    backgroundColor: "#F0EDE8",
+    margin: "16px 0",
+  },
+  summaryRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "8px",
+    fontSize: "13px",
+    color: "#666666",
+  },
+  summaryTotal: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "12px",
+    paddingTop: "12px",
+    borderTop: "1px solid #F0EDE8",
+    fontSize: "16px",
+    fontWeight: "700",
+  },
+  processButton: {
+    width: "100%",
+    padding: "14px",
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "20px",
+  },
+
+  // Receipt Page
+  receiptPage: {
+    padding: "48px 5%",
+    minHeight: "calc(100vh - 70px)",
+    backgroundColor: "#F5F0E8",
+  },
+  receiptContainer: {
+    maxWidth: "500px",
+    margin: "0 auto",
+    backgroundColor: "#FFFFFF",
+    borderRadius: "16px",
+    padding: "32px",
+  },
+  receiptHeader: {
+    textAlign: "center",
+    marginBottom: "24px",
+    paddingBottom: "20px",
+    borderBottom: "2px dashed #F0EDE8",
+  },
+  receiptLogo: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#2D1B0E",
+    letterSpacing: "2px",
+  },
+  receiptTagline: {
+    fontSize: "10px",
+    color: "#C2552A",
+    letterSpacing: "2px",
+    textTransform: "uppercase",
+    marginTop: "4px",
+  },
+  receiptMeta: {
+    fontSize: "11px",
+    color: "#AAAAAA",
+    marginTop: "8px",
+  },
+  receiptInfo: {
+    backgroundColor: "#FAFAF7",
+    padding: "16px",
+    borderRadius: "12px",
+    marginBottom: "24px",
+  },
+  receiptInfoRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "8px",
+    fontSize: "12px",
+  },
+  receiptItems: {
+    marginBottom: "24px",
+  },
+  receiptSectionTitle: {
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "12px",
+    paddingBottom: "8px",
+    borderBottom: "1px solid #F0EDE8",
+  },
+  receiptItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "12px",
+  },
+  receiptItemName: {
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#333333",
+  },
+  receiptItemMeta: {
+    fontSize: "11px",
+    color: "#AAAAAA",
+  },
+  receiptItemPrice: {
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "#C2552A",
+  },
+  receiptTotals: {
+    borderTop: "1px solid #F0EDE8",
+    paddingTop: "16px",
+    marginBottom: "24px",
+  },
+  receiptRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "8px",
+    fontSize: "13px",
+    color: "#666666",
+  },
+  receiptGrandTotal: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginTop: "12px",
+    paddingTop: "12px",
+    borderTop: "1px solid #F0EDE8",
+    fontSize: "16px",
+    fontWeight: "700",
+  },
+  receiptAddress: {
+    backgroundColor: "#FAFAF7",
+    padding: "16px",
+    borderRadius: "12px",
+    marginBottom: "24px",
+  },
+  receiptAddressTitle: {
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#2D1B0E",
+    marginBottom: "8px",
+  },
+  receiptNote: {
+    marginTop: "8px",
+    fontStyle: "italic",
+    color: "#888888",
+  },
+  receiptFooter: {
+    textAlign: "center",
+    paddingTop: "20px",
+    borderTop: "2px dashed #F0EDE8",
+    fontSize: "11px",
+    color: "#AAAAAA",
+    lineHeight: "1.6",
+    marginBottom: "24px",
+  },
+  receiptCloseButton: {
+    width: "100%",
+    padding: "12px",
+    backgroundColor: "#C2552A",
+    color: "#FFFFFF",
+    border: "none",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+};
