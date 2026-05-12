@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 const SYSTEM_PROMPT = `Kamu adalah Reika, asisten virtual AI untuk REKAIN — brand karya seni handmade berbahan kain perca dari Medan, Indonesia.
 
 FILOSOFI REKAIN:
-REKAIN percaya bahwa tidak ada kain yang benar-benar "sampah". Setiap helai kain perca yang dibuang memiliki potensi menjadi karya bernilai tinggi. Dengan tangan-tangan terampil, kain sisa produksi dan kain bekas diubah menjadi produk fashion dan aksesori yang unik, fungsional, dan bernilai seni — sekaligus mengurangi limbah tekstil. Setiap produk adalah satu-satunya di dunia.
+REKAIN percaya bahwa tidak ada kain yang benar-benar "sampah". Setiap helai kain perca yang dibuang memiliki potensi menjadi karya bernilai tinggi. Dengan tangan-tangan terampil, kain sisa produksi dari pabrik garmen menjadi aksesori, tas, dan pakaian yang bernilai jual tinggi.
 
 PRODUK REKAIN (semua handmade, one-of-a-kind):
 - Tas & Tote Bag perca: Rp 85.000 - Rp 250.000
@@ -52,7 +52,7 @@ export default function RekainChatbot() {
     {
       role: "assistant",
       content:
-        "Halo! Selamat datang di REKAIN.\n\nKami mengubah kain perca yang terbuang menjadi karya seni bernilai — satu helai, satu cerita.\n\nSaya Reika, siap membantu kamu menemukan produk yang pas atau menceritakan lebih lanjut tentang kami.",
+        "Halo! Selamat datang di REKAIN.\n\nKami mengubah kain perca yang terbuang menjadi karya seni bernilai — satu helai, satu cerita.\n\nSaya Reika, siap membantu kamu menemukan produk yang tepat untuk kebutuhan dan budget kamu.",
     },
   ]);
   const [input,    setInput]   = useState("");
@@ -135,7 +135,7 @@ export default function RekainChatbot() {
           border: 1px solid #D4C4A8;
           display: flex; flex-direction: column; overflow: hidden;
           box-shadow: 0 16px 48px rgba(28,16,7,.18);
-          z-index: 9998; font-family: 'DM Sans', sans-serif;
+          z-index: 9998 !important; font-family: 'DM Sans', sans-serif;
           animation: rk-up .25s ease;
         }
         .rk-msgs {
@@ -195,7 +195,7 @@ export default function RekainChatbot() {
           width: 58px; height: 58px; background: #1C1007;
           border: 2px solid #C8A252; border-radius: 50%; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          z-index: 9999; box-shadow: 0 4px 20px rgba(28,16,7,.25);
+          z-index: 9999 !important; box-shadow: 0 4px 20px rgba(28,16,7,.25);
           transition: transform .2s, box-shadow .2s;
         }
         .rk-toggle:hover { transform: scale(1.06); box-shadow: 0 6px 28px rgba(28,16,7,.35); }
@@ -222,7 +222,7 @@ export default function RekainChatbot() {
 
           {/* Header */}
           <div style={{ background:"#1C1007", padding:"16px 18px", display:"flex", alignItems:"center", gap:13 }}>
-            <div style={{ width:40, height:40, borderRadius:"50%", background:"linear-gradient(135deg,#C8A252,#8B6520)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, border:"1.5px solid #C8A252" }}>
+            <div style={{ width:40, height:40, borderRadius:"50%", background:"linear-gradient(135deg,#C8A252,#8B6520)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, borderRadius:"50%", border:"2px solid #8B6520" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1C1007" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
