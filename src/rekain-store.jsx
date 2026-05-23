@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/rekain-store.jsx << 'ENDOFFILE'
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
@@ -813,10 +812,3 @@ const styles = {
   formLabel: { display: "block", fontSize: "12px", fontWeight: "600", color: "#333333", marginBottom: "6px" },
   formInput: { width: "100%", padding: "12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", outline: "none", resize: "vertical" },
 };
-ENDOFFILE
-echo "Done"
-
-
-
-
-Claude is AI and can make mistakes. Please double-check responses.
