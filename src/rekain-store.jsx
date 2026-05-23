@@ -56,7 +56,7 @@ const PRODUCTS = [
     desc: "ikat rambut handmade karya mahasiswa kewirausahaan."
     color: "#7B3D8C",
     badge: "Limited",
-    images: [],
+    images: ["/ikat-rambut-perca.jpeg"],
   },
 ];
 
