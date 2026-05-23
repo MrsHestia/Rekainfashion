@@ -1,3 +1,4 @@
+cat > /mnt/user-data/outputs/rekain-store.jsx << 'ENDOFFILE'
 import React, { useState, useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
@@ -53,7 +54,8 @@ const PRODUCTS = [
     category: "Aksesoris",
     price: 9000,
     stock: 20,
-    desc: "ikat rambut handmade karya mahasiswa kewirausahaan.",
+    desc: "Ikat rambut handmade karya mahasiswa kewirausahaan.",
+    sizes: [],
     color: "#7B3D8C",
     badge: "Limited",
     images: ["/ikat-rambut-perca.jpeg"],
@@ -373,13 +375,16 @@ export default function RekainStore() {
 
   // ---- Cart ----
   const addToCart = (product, size) => {
-    if (!size) { alert("Silakan pilih ukuran"); return; }
-    const cartKey = `${product.id}-${size}`;
+    // Produk tanpa ukuran (aksesoris) tidak perlu pilih size
+    const hasSizes = product.sizes && product.sizes.length > 0;
+    if (hasSizes && !size) { alert("Silakan pilih ukuran"); return; }
+    const effectiveSize = hasSizes ? size : "One Size";
+    const cartKey = `${product.id}-${effectiveSize}`;
     const existing = cart.find((item) => item.cartKey === cartKey);
     if (existing) {
       setCart((prev) => prev.map((item) => item.cartKey === cartKey ? { ...item, quantity: item.quantity + 1 } : item));
     } else {
-      setCart([...cart, { cartKey, id: product.id, name: product.name, price: product.price, size, quantity: 1, images: product.images, color: product.color }]);
+      setCart([...cart, { cartKey, id: product.id, name: product.name, price: product.price, size: effectiveSize, quantity: 1, images: product.images, color: product.color }]);
     }
     setSelectedProduct(null);
     setCartSize(null);
@@ -694,22 +699,25 @@ export default function RekainStore() {
               </div>
               <p style={{ fontSize: "13px", color: "#666666", lineHeight: "1.6", marginBottom: "20px" }}>{selectedProduct.desc}</p>
 
-              <div style={{ marginBottom: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#2D1B0E" }}>PILIH UKURAN</label>
-                  <button onClick={() => setSizeGuideOpen(true)} style={{ background: "none", border: "none", fontSize: "11px", color: "#C2552A", cursor: "pointer", textDecoration: "underline" }}>
-                    Panduan Ukuran
-                  </button>
-                </div>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  {selectedProduct.sizes.map((size) => (
-                    <button key={size} onClick={() => setCartSize(size)}
-                      style={{ padding: "10px 16px", backgroundColor: cartSize === size ? "#C2552A" : "#F5F0E8", color: cartSize === size ? "#FFFFFF" : "#2D1B0E", border: "1px solid #EEEEEE", borderRadius: "6px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
-                      {size}
+              {/* Hanya tampilkan pilih ukuran jika produk punya sizes */}
+              {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
+                <div style={{ marginBottom: "20px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "600", color: "#2D1B0E" }}>PILIH UKURAN</label>
+                    <button onClick={() => setSizeGuideOpen(true)} style={{ background: "none", border: "none", fontSize: "11px", color: "#C2552A", cursor: "pointer", textDecoration: "underline" }}>
+                      Panduan Ukuran
                     </button>
-                  ))}
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {selectedProduct.sizes.map((size) => (
+                      <button key={size} onClick={() => setCartSize(size)}
+                        style={{ padding: "10px 16px", backgroundColor: cartSize === size ? "#C2552A" : "#F5F0E8", color: cartSize === size ? "#FFFFFF" : "#2D1B0E", border: "1px solid #EEEEEE", borderRadius: "6px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+                        {size}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <motion.button style={styles.processButton} whileHover={{ backgroundColor: "#A04420" }} whileTap={{ scale: 0.98 }} onClick={() => addToCart(selectedProduct, cartSize)}>
                 Masukkan Keranjang
@@ -805,3 +813,10 @@ const styles = {
   formLabel: { display: "block", fontSize: "12px", fontWeight: "600", color: "#333333", marginBottom: "6px" },
   formInput: { width: "100%", padding: "12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", outline: "none", resize: "vertical" },
 };
+ENDOFFILE
+echo "Done"
+
+
+
+
+Claude is AI and can make mistakes. Please double-check responses.
