@@ -134,7 +134,6 @@ function ScrollReveal({ children, delay = 0, className = "" }) {
   );
 }
 
-
 // =====================================================================
 // SPARKLE RATING COMPONENT
 // =====================================================================
@@ -254,7 +253,7 @@ function ProductCard({ product, onSelect, rating }) {
           </span>
         )}
 
-        {/* Slider controls — hanya tampil jika ada 2+ foto */}
+        {/* Slider controls */}
         {hasImages && product.images.length > 1 && (
           <>
             <button
@@ -450,11 +449,9 @@ export default function RekainStore() {
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [cartSize, setCartSize] = useState(null);
   const [paymentData, setPaymentData] = useState(null);
-  const [paymentUrl, setPaymentUrl] = useState(null);
 
   // Fetch ratings function
   const fetchRatings = async () => {
-    // Here you'd typically fetch from an API
     const mockRatings = {
       1: { average: 4.8, count: 12 },
       2: { average: 4.6, count: 8 },
@@ -470,7 +467,6 @@ export default function RekainStore() {
       return;
     }
 
-    // Update local ratings
     const updatedRatings = { ...ratings };
     if (!updatedRatings[product.id]) {
       updatedRatings[product.id] = { average: 0, count: 0 };
@@ -483,7 +479,6 @@ export default function RekainStore() {
     setRatings(updatedRatings);
     setReviewForm({ submitted: true, name: "", rating: 0, comment: "" });
 
-    // Simulate API submission
     setTimeout(() => {
       setReviewForm({ submitted: false, name: "", rating: 0, comment: "" });
     }, 2000);
@@ -754,6 +749,7 @@ export default function RekainStore() {
             maxHeight: "90vh",
             maxWidth: "600px",
             width: "100%",
+            position: "relative",
           }}
         >
           {selectedProduct && (
@@ -790,6 +786,29 @@ export default function RekainStore() {
                   </div>
                 )}
               </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedProduct(null)}
+                style={{
+                  position: "absolute",
+                  top: "16px",
+                  right: "16px",
+                  background: "rgba(255,255,255,0.9)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "36px",
+                  height: "36px",
+                  fontSize: "20px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                }}
+              >
+                ✕
+              </button>
 
               {/* Product Info */}
               <div style={{ padding: "32px 24px" }}>
@@ -882,7 +901,6 @@ export default function RekainStore() {
                     BERI PENILAIAN
                   </p>
 
-                  {/* Show existing rating */}
                   {ratings[selectedProduct.id] && ratings[selectedProduct.id].count > 0 && (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
                       <SparkleRating value={Math.round(ratings[selectedProduct.id].average)} size={14} />
@@ -926,31 +944,8 @@ export default function RekainStore() {
                   )}
                 </div>
               </div>
-
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedProduct(null)}
-                style={{
-                  position: "absolute",
-                  top: "16px",
-                  right: "16px",
-                  background: "rgba(255,255,255,0.9)",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "36px",
-                  height: "36px",
-                  fontSize: "20px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
-                }}
-              >
-                ✕
-              </button>
             </div>
-          </motion.div>
+          )}
         </motion.div>
       )}
 
@@ -1214,6 +1209,7 @@ const styles = {
   cartBadge: { position: "absolute", top: "-8px", right: "-12px", backgroundColor: "#C2552A", color: "#FFFFFF", fontSize: "10px", fontWeight: "600", width: "18px", height: "18px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
   heroSection: { position: "relative", minHeight: "560px", display: "flex", alignItems: "flex-end", justifyContent: "center", textAlign: "center", backgroundImage: "url('/rekain-hero.jpeg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" },
   heroOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(to top, rgba(20,10,2,0.80) 0%, rgba(20,10,2,0.15) 60%, transparent 100%)" },
+  heroContent: { position: "relative", padding: "60px 20px", maxWidth: "700px", margin: "0 auto" },
   heroBadge: { display: "inline-block", fontSize: "11px", letterSpacing: "3px", color: "#C2A882", textTransform: "uppercase", marginBottom: "20px" },
   heroTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: "600", color: "#FFFFFF", lineHeight: "1.2", marginBottom: "20px" },
   heroSubtitle: { fontSize: "15px", color: "#D4C5B0", lineHeight: "1.7", marginBottom: "32px", maxWidth: "500px", margin: "0 auto 32px" },
