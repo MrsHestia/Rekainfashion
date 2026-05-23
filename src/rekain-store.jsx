@@ -57,7 +57,7 @@ const PRODUCTS = [
     sizes: [],
     color: "#7B3D8C",
     badge: "Limited",
-    images: ["/ikat-rambut-perca.jpeg"],
+    images: ["/ikat-rambut-perca.png"],
   },
 ];
 
