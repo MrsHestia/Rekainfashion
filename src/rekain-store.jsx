@@ -7,36 +7,39 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 const PRODUCTS = [
   {
     id: 1,
-    name: "Batik Perca Anak",
-    category: "Kemeja",
-    price: 79000,
+    name: "Gaun Batik Perca Nusantara",
+    category: "Gaun",
+    price: 85000,
     stock: 12,
-    desc: "Dijahit dari potongan batik pilihan yang seharusnya terbuang. Kini menjadi kemeja yang nyaman dipakai si kecil seharian.",
-    sizes: ["2-3T", "4-5T", "6-7T", "8-9T"],
+    desc: "Gaun cantik kombinasi atasan putih bersih dan rok batik perca motif Nusantara. Dibuat dari kain batik pilihan yang penuh warna dan karakter. Cocok untuk acara spesial si kecil.",
+    sizes: ["2-3T", "3-4T", "4-5T"],
     color: "#8B4513",
     badge: "Best Seller",
+    images: ["/gaun-batik-perca-nusantara-1.jpeg", "/gaun-batik-perca-nusantara-2.jpeg"],
   },
   {
     id: 2,
-    name: "Gaun Perca Floral",
+    name: "Dress Hati Manis",
     category: "Gaun",
-    price: 85000,
+    price: 79000,
     stock: 8,
-    desc: "Motif bunga dari kain perca yang lembut di kulit. Untuk putri kecil yang selalu berharga.",
-    sizes: ["2-3T", "4-5T", "6-7T"],
-    color: "#C2552A",
+    desc: "Dress satin lembut dengan aplikasi hati di dada — manis dan elegan untuk si kecil. Warna pink pastel yang memesona, pilihan sempurna untuk ulang tahun atau foto keluarga.",
+    sizes: ["3-4T", "4-5T", "5-6T"],
+    color: "#E8A0BF",
     badge: "New Arrival",
+    images: ["/dress-hati-manis-1.jpeg", "/dress-hati-manis-2.jpeg"],
   },
   {
     id: 3,
-    name: "Kemeja Batik Casual",
-    category: "Kemeja",
-    price: 75000,
+    name: "Dress Denim Rose",
+    category: "Gaun",
+    price: 95000,
     stock: 15,
-    desc: "Santai ke taman atau hangout bersama teman. Kemeja ini menemani hari-hari si kecil tanpa rewel.",
-    sizes: ["2-3T", "4-5T", "6-7T", "8-9T", "10T"],
-    color: "#4A7A5A",
+    desc: "Perpaduan atasan denim biru tanpa lengan dengan rok floral motif mawar pink. Tampil kasual tapi tetap feminin — cocok untuk hangout atau acara santai remaja putri.",
+    sizes: ["S", "M", "L"],
+    color: "#6B9AC4",
     badge: null,
+    images: ["/dress-denim-rose-1.jpeg", "/dress-denim-rose-2.jpeg"],
   },
   {
     id: 4,
@@ -48,6 +51,7 @@ const PRODUCTS = [
     sizes: ["3-4T", "5-6T", "7-8T"],
     color: "#7B3D8C",
     badge: "Limited",
+    images: [],
   },
   {
     id: 5,
@@ -59,6 +63,7 @@ const PRODUCTS = [
     sizes: ["2-3T", "4-5T", "6-7T", "8-9T"],
     color: "#2C5F8A",
     badge: null,
+    images: [],
   },
   {
     id: 6,
@@ -70,6 +75,7 @@ const PRODUCTS = [
     sizes: ["3-4T", "5-6T", "7-8T"],
     color: "#8B6914",
     badge: "Promo",
+    images: [],
   },
 ];
 
@@ -174,9 +180,21 @@ function ScrollReveal({ children, delay = 0, className = "" }) {
 }
 
 /* ============================================================
-   PRODUCT CARD COMPONENT
+   PRODUCT CARD COMPONENT — dengan image slider
 ============================================================ */
 function ProductCard({ product, onSelect }) {
+  const [slide, setSlide] = useState(0);
+  const hasImages = product.images && product.images.length > 0;
+
+  const nextSlide = (e) => {
+    e.stopPropagation();
+    setSlide((prev) => (prev + 1) % product.images.length);
+  };
+  const prevSlide = (e) => {
+    e.stopPropagation();
+    setSlide((prev) => (prev - 1 + product.images.length) % product.images.length);
+  };
+
   return (
     <motion.div
       variants={cardVariant}
@@ -190,17 +208,41 @@ function ProductCard({ product, onSelect }) {
         border: "1px solid #EEEEEE",
       }}
     >
+      {/* IMAGE / SLIDER */}
       <div
         style={{
-          height: "240px",
+          height: "280px",
           backgroundColor: product.color,
           position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          overflow: "hidden",
         }}
       >
-        <span style={{ fontSize: "48px", opacity: 0.3 }}>👕</span>
+        {hasImages ? (
+          <img
+            src={product.images[slide]}
+            alt={product.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "top center",
+              display: "block",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <span style={{ fontSize: "48px", opacity: 0.3 }}>👕</span>
+          </div>
+        )}
+
+        {/* Badge */}
         {product.badge && (
           <span
             style={{
@@ -218,8 +260,89 @@ function ProductCard({ product, onSelect }) {
             {product.badge}
           </span>
         )}
+
+        {/* Slider controls — hanya tampil jika ada 2+ foto */}
+        {hasImages && product.images.length > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              style={{
+                position: "absolute",
+                left: "8px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "rgba(255,255,255,0.85)",
+                border: "none",
+                borderRadius: "50%",
+                width: "28px",
+                height: "28px",
+                fontSize: "16px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}
+            >
+              ‹
+            </button>
+            <button
+              onClick={nextSlide}
+              style={{
+                position: "absolute",
+                right: "8px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "rgba(255,255,255,0.85)",
+                border: "none",
+                borderRadius: "50%",
+                width: "28px",
+                height: "28px",
+                fontSize: "16px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}
+            >
+              ›
+            </button>
+
+            {/* Dots indicator */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "8px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                gap: "5px",
+              }}
+            >
+              {product.images.map((_, i) => (
+                <div
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSlide(i);
+                  }}
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    cursor: "pointer",
+                    backgroundColor: i === slide ? "#fff" : "rgba(255,255,255,0.5)",
+                    transition: "background 0.2s",
+                  }}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
+      {/* INFO */}
       <div style={{ padding: "20px" }}>
         <div
           style={{
@@ -432,9 +555,6 @@ export default function RekainStore() {
     setCart((prev) => prev.filter((item) => item.cartKey !== cartKey));
   };
 
-  /* ============================================================
-     XENDIT PAYMENT — menggantikan Midtrans window.snap.pay()
-  ============================================================ */
   const processPayment = async () => {
     if (!customerForm.name || !customerForm.phone || !customerForm.address) {
       alert("Mohon lengkapi data pengiriman terlebih dahulu.");
@@ -479,7 +599,6 @@ export default function RekainStore() {
         throw new Error(data.error || "Gagal mendapatkan link pembayaran");
       }
 
-      // Redirect ke halaman pembayaran Xendit
       window.location.href = data.invoiceUrl;
 
     } catch (err) {
@@ -493,39 +612,12 @@ export default function RekainStore() {
     <div style={styles.appContainer}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
-        
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        body {
-          font-family: 'DM Sans', sans-serif;
-          background-color: #FAFAF7;
-        }
-        
-        ::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: #F0EDE8;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: #C2552A;
-          border-radius: 4px;
-        }
-        
-        @media print {
-          .no-print {
-            display: none !important;
-          }
-          body {
-            background: white;
-          }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background-color: #FAFAF7; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #F0EDE8; }
+        ::-webkit-scrollbar-thumb { background: #C2552A; border-radius: 4px; }
+        @media print { .no-print { display: none !important; } body { background: white; } }
       `}</style>
 
       {/* Navigation */}
@@ -595,9 +687,7 @@ export default function RekainStore() {
             >
               <div style={styles.cartHeader}>
                 <h3 style={styles.cartTitle}>Keranjang Belanja</h3>
-                <button style={styles.closeButton} onClick={() => setIsCartOpen(false)}>
-                  ✕
-                </button>
+                <button style={styles.closeButton} onClick={() => setIsCartOpen(false)}>✕</button>
               </div>
 
               {cart.length === 0 ? (
@@ -612,12 +702,22 @@ export default function RekainStore() {
                   <div style={styles.cartItems}>
                     {cart.map((item) => (
                       <motion.div key={item.cartKey} style={styles.cartItem} layout>
+                        {/* Cart item thumbnail */}
                         <div
                           style={{
                             ...styles.cartItemImage,
                             backgroundColor: item.color,
+                            overflow: "hidden",
                           }}
-                        />
+                        >
+                          {item.images && item.images.length > 0 ? (
+                            <img
+                              src={item.images[0]}
+                              alt={item.name}
+                              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+                            />
+                          ) : null}
+                        </div>
                         <div style={styles.cartItemDetails}>
                           <h4 style={styles.cartItemName}>{item.name}</h4>
                           <p style={styles.cartItemMeta}>Ukuran: {item.selectedSize}</p>
@@ -699,17 +799,32 @@ export default function RekainStore() {
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Modal image — tampilkan foto asli */}
               <div
                 style={{
                   ...styles.modalImage,
                   backgroundColor: selectedProduct.color,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  overflow: "hidden",
                 }}
               >
-                <span style={{ fontSize: "64px", opacity: 0.3 }}>👕</span>
+                {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                  <img
+                    src={selectedProduct.images[0]}
+                    alt={selectedProduct.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "top center",
+                    }}
+                  />
+                ) : (
+                  <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: "64px", opacity: 0.3 }}>👕</span>
+                  </div>
+                )}
               </div>
+
               <div style={styles.modalContent}>
                 <div style={styles.modalHeader}>
                   <div>
@@ -1019,7 +1134,6 @@ export default function RekainStore() {
                     />
                   </div>
 
-                  {/* Payment methods info */}
                   <div style={styles.paymentInfo}>
                     <p style={styles.paymentInfoTitle}>💳 Metode Pembayaran Tersedia</p>
                     <p style={styles.paymentInfoDesc}>
@@ -1177,13 +1291,7 @@ export default function RekainStore() {
 ============================================================ */
 const styles = {
   appContainer: { minHeight: "100vh", backgroundColor: "#FAFAF7" },
-
-  // Navigation
-  navbar: {
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "0 5%", height: "70px", backgroundColor: "#FFFFFF",
-    borderBottom: "1px solid #F0EDE8", position: "sticky", top: 0, zIndex: 100,
-  },
+  navbar: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 5%", height: "70px", backgroundColor: "#FFFFFF", borderBottom: "1px solid #F0EDE8", position: "sticky", top: 0, zIndex: 100 },
   logoArea: { display: "flex", alignItems: "baseline", gap: "8px", cursor: "pointer" },
   logo: { fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontWeight: "700", color: "#2D1B0E", letterSpacing: "2px" },
   logoSub: { fontSize: "10px", letterSpacing: "3px", color: "#C2552A", textTransform: "uppercase" },
@@ -1192,12 +1300,8 @@ const styles = {
   navLinkActive: { color: "#C2552A", borderBottom: "2px solid #C2552A" },
   cartButton: { background: "none", border: "none", fontSize: "22px", cursor: "pointer", position: "relative" },
   cartBadge: { position: "absolute", top: "-8px", right: "-12px", backgroundColor: "#C2552A", color: "#FFFFFF", fontSize: "10px", fontWeight: "600", width: "18px", height: "18px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-
-  // Overlay
   overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "flex-end" },
   closeButton: { background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#888888" },
-
-  // Cart Sidebar
   cartSidebar: { width: "400px", maxWidth: "90vw", height: "100%", backgroundColor: "#FFFFFF", display: "flex", flexDirection: "column" },
   cartHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px", borderBottom: "1px solid #EEEEEE" },
   cartTitle: { fontSize: "18px", fontWeight: "600", color: "#2D1B0E" },
@@ -1218,10 +1322,8 @@ const styles = {
   cartTotalRow: { display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px", color: "#666666" },
   cartGrandTotal: { display: "flex", justifyContent: "space-between", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #EEEEEE", fontSize: "16px", fontWeight: "700" },
   checkoutButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "16px" },
-
-  // Product Modal
   productModal: { width: "90%", maxWidth: "500px", maxHeight: "90vh", backgroundColor: "#FFFFFF", borderRadius: "16px", overflowY: "auto", margin: "auto" },
-  modalImage: { height: "200px", display: "flex", alignItems: "center", justifyContent: "center" },
+  modalImage: { height: "260px", display: "flex", alignItems: "center", justifyContent: "center" },
   modalContent: { padding: "24px" },
   modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" },
   modalCategory: { fontSize: "11px", color: "#AAAAAA", letterSpacing: "1px", textTransform: "uppercase" },
@@ -1236,8 +1338,6 @@ const styles = {
   sizeButton: { padding: "8px 16px", border: "1.5px solid #DDDDDD", background: "#FFFFFF", borderRadius: "8px", fontSize: "12px", cursor: "pointer", transition: "all 0.2s" },
   sizeButtonActive: { borderColor: "#C2552A", backgroundColor: "#C2552A", color: "#FFFFFF" },
   addToCartButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer" },
-
-  // Size Guide Modal
   sizeGuideModal: { backgroundColor: "#FFFFFF", borderRadius: "16px", width: "90%", maxWidth: "700px", maxHeight: "85vh", overflowY: "auto", padding: "24px", margin: "auto" },
   sizeGuideHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #EEEEEE", paddingBottom: "12px" },
   sizeGuideTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: "600", color: "#2D1B0E" },
@@ -1253,29 +1353,21 @@ const styles = {
   sizeGuideNote: { backgroundColor: "#FAFAF7", padding: "12px", borderRadius: "8px", marginBottom: "20px" },
   sizeGuideNoteText: { fontSize: "11px", color: "#888888", lineHeight: "1.5", margin: 0 },
   sizeGuideCloseButton: { backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", padding: "12px 24px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", width: "100%" },
-
-  // Loading
   loadingOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.9)", zIndex: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" },
   loadingSpinner: { width: "40px", height: "40px", border: "3px solid #F0EDE8", borderTopColor: "#C2552A", borderRadius: "50%" },
   loadingText: { fontSize: "14px", color: "#666666" },
-
-  // Hero
-  heroSection: { position: "relative", minHeight: "500px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", background: "linear-gradient(135deg, #2D1B0E 0%, #4A2A1A 100%)" },
-  heroOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "radial-gradient(circle at 30% 50%, rgba(194,85,42,0.1) 0%, transparent 70%)" },
+  heroSection: { position: "relative", minHeight: "560px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", backgroundImage: "url('/rekain-hero.jpeg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" },
+  heroOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(28, 14, 4, 0.62)" },
   heroContent: { position: "relative", padding: "60px 20px", maxWidth: "700px", margin: "0 auto" },
   heroBadge: { display: "inline-block", fontSize: "11px", letterSpacing: "3px", color: "#C2A882", textTransform: "uppercase", marginBottom: "20px" },
   heroTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: "600", color: "#FFFFFF", lineHeight: "1.2", marginBottom: "20px" },
   heroSubtitle: { fontSize: "15px", color: "#D4C5B0", lineHeight: "1.7", marginBottom: "32px", maxWidth: "500px", margin: "0 auto 32px" },
   heroButton: { padding: "12px 32px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "40px", fontSize: "13px", fontWeight: "600", cursor: "pointer" },
-
-  // Values
   valuesSection: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", backgroundColor: "#FFFFFF", borderBottom: "1px solid #F0EDE8" },
   valueCard: { padding: "48px 24px", textAlign: "center", borderRight: "1px solid #F0EDE8" },
   valueIcon: { fontSize: "36px", marginBottom: "16px" },
   valueTitle: { fontSize: "16px", fontWeight: "600", color: "#2D1B0E", marginBottom: "8px" },
   valueDescription: { fontSize: "13px", color: "#888888", lineHeight: "1.6" },
-
-  // Products Section
   productsSection: { padding: "80px 5%" },
   sectionHeader: { textAlign: "center", marginBottom: "48px" },
   sectionBadge: { fontSize: "11px", letterSpacing: "3px", color: "#C2552A", textTransform: "uppercase", display: "block", marginBottom: "12px" },
@@ -1284,15 +1376,11 @@ const styles = {
   productGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "24px" },
   viewAllContainer: { textAlign: "center", marginTop: "48px" },
   viewAllButton: { padding: "12px 32px", backgroundColor: "transparent", color: "#C2552A", border: "2px solid #C2552A", borderRadius: "40px", fontSize: "13px", fontWeight: "600", cursor: "pointer" },
-
-  // Footer
   footer: { backgroundColor: "#2D1B0E", padding: "48px 20px", textAlign: "center" },
   footerContent: { maxWidth: "600px", margin: "0 auto" },
   footerLogo: { fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontWeight: "600", color: "#FFFFFF", letterSpacing: "2px", marginBottom: "12px" },
   footerTagline: { fontSize: "12px", color: "#C2A882", marginBottom: "16px" },
   footerCopyright: { fontSize: "11px", color: "#666666" },
-
-  // Shop Page
   shopPage: { padding: "48px 5%" },
   shopHeader: { textAlign: "center", marginBottom: "40px" },
   shopTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "36px", fontWeight: "600", color: "#2D1B0E", marginBottom: "8px" },
@@ -1300,8 +1388,6 @@ const styles = {
   categoryFilter: { display: "flex", justifyContent: "center", gap: "12px", marginBottom: "40px", flexWrap: "wrap" },
   filterButton: { padding: "8px 20px", backgroundColor: "#FFFFFF", color: "#666666", border: "1.5px solid #EEEEEE", borderRadius: "30px", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" },
   filterButtonActive: { backgroundColor: "#C2552A", color: "#FFFFFF", borderColor: "#C2552A" },
-
-  // Checkout Page
   checkoutPage: { padding: "48px 5%", minHeight: "calc(100vh - 70px)" },
   checkoutContainer: { maxWidth: "1000px", margin: "0 auto" },
   checkoutTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "28px", fontWeight: "600", color: "#2D1B0E", marginBottom: "8px" },
@@ -1326,8 +1412,6 @@ const styles = {
   summaryTotal: { display: "flex", justifyContent: "space-between", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #F0EDE8", fontSize: "16px", fontWeight: "700" },
   processButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "20px" },
   xenditNote: { textAlign: "center", fontSize: "11px", color: "#AAAAAA", marginTop: "10px" },
-
-  // Receipt Page
   receiptPage: { padding: "48px 5%", minHeight: "calc(100vh - 70px)", backgroundColor: "#F5F0E8" },
   receiptContainer: { maxWidth: "500px", margin: "0 auto", backgroundColor: "#FFFFFF", borderRadius: "16px", padding: "32px" },
   receiptHeader: { textAlign: "center", marginBottom: "24px", paddingBottom: "20px", borderBottom: "2px dashed #F0EDE8" },
