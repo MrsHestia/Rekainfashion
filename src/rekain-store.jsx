@@ -1,27 +1,15 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
-import { createClient } from "@supabase/supabase-js";
+import React, { useState, useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
-/* ============================================================
-   SUPABASE CLIENT
-   Tambahkan di .env:
-   VITE_SUPABASE_URL=https://xxxx.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-============================================================ */
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
-
-/* ============================================================
-   DATA PRODUK
-============================================================ */
+// =====================================================================
+// PRODUCTS DATA
+// =====================================================================
 const PRODUCTS = [
   {
     id: 1,
     name: "Gaun Batik Perca Nusantara",
     category: "Gaun",
-    price: 85000,
+    price: 89000,
     stock: 12,
     desc: "Gaun cantik kombinasi atasan putih bersih dan rok batik perca motif Nusantara. Dibuat dari kain batik pilihan yang penuh warna dan karakter. Cocok untuk acara spesial si kecil.",
     sizes: ["2-3T", "3-4T", "4-5T"],
@@ -81,64 +69,19 @@ const PRODUCTS = [
     id: 6,
     name: "Set Batik Anak",
     category: "Set",
-    price: 85000,
+    price: 110000,
     stock: 5,
-    desc: "Satu beli langsung siap tampil. Set kemeja dan celana atau rok batik. Praktis untuk Bunda.",
-    sizes: ["3-4T", "5-6T", "7-8T"],
-    color: "#8B6914",
-    badge: "Promo",
+    desc: "Sepasang kemeja dan celana dari kain batik tradisional yang dikombinasikan dengan desain modern.",
+    sizes: ["4-5T", "6-7T"],
+    color: "#A0522D",
+    badge: null,
     images: [],
   },
 ];
 
-/* ============================================================
-   SIZE GUIDE DATA
-============================================================ */
-const SIZE_GUIDE_DATA = {
-  title: "Panduan Ukuran Pakaian Anak",
-  description: "Pilih ukuran yang pas untuk si kecil agar nyaman beraktivitas",
-  tips: [
-    "Ukur lingkar dada, panjang badan, dan berat badan anak sebelum memilih",
-    "Jika anak di antara dua ukuran, pilih ukuran yang lebih besar",
-    "Untuk anak yang aktif, pilih ukuran yang sedikit longgar",
-    "Setiap merek mungkin memiliki standar ukuran berbeda",
-  ],
-  measurements: [
-    { usia: "1-2 tahun", tinggi: "75-85 cm", berat: "9-12 kg", dada: "50-52 cm" },
-    { usia: "2-3 tahun", tinggi: "85-95 cm", berat: "12-14 kg", dada: "52-54 cm" },
-    { usia: "3-4 tahun", tinggi: "95-105 cm", berat: "14-16 kg", dada: "54-56 cm" },
-    { usia: "4-5 tahun", tinggi: "105-115 cm", berat: "16-18 kg", dada: "56-58 cm" },
-    { usia: "5-6 tahun", tinggi: "115-125 cm", berat: "18-20 kg", dada: "58-60 cm" },
-    { usia: "6-7 tahun", tinggi: "125-135 cm", berat: "20-23 kg", dada: "60-63 cm" },
-    { usia: "7-8 tahun", tinggi: "135-145 cm", berat: "23-26 kg", dada: "63-66 cm" },
-    { usia: "8-9 tahun", tinggi: "145-150 cm", berat: "26-30 kg", dada: "66-69 cm" },
-    { usia: "9-10 tahun", tinggi: "150-155 cm", berat: "30-34 kg", dada: "69-72 cm" },
-  ],
-};
-
-/* ============================================================
-   HELPERS
-============================================================ */
-function formatRupiah(amount) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
-
-function generateOrderId() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `RKN/${year}${month}${day}/${random}`;
-}
-
-/* ============================================================
-   ANIMATION
-============================================================ */
+// =====================================================================
+// ANIMATION
+// =====================================================================
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (delay = 0) => ({
@@ -170,9 +113,9 @@ const cardVariant = {
   },
 };
 
-/* ============================================================
-   SCROLL REVEAL COMPONENT
-============================================================ */
+// =====================================================================
+// SCROLL REVEAL COMPONENT
+// =====================================================================
 function ScrollReveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
@@ -192,9 +135,9 @@ function ScrollReveal({ children, delay = 0, className = "" }) {
 }
 
 
-/* ============================================================
-   SPARKLE RATING COMPONENT
-============================================================ */
+// =====================================================================
+// SPARKLE RATING COMPONENT
+// =====================================================================
 function Sparkle({ filled, size = 12 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: "block" }}>
@@ -229,9 +172,9 @@ function SparkleRating({ value = 0, max = 5, size = 12, interactive = false, onC
   );
 }
 
-/* ============================================================
-   PRODUCT CARD COMPONENT — dengan image slider
-============================================================ */
+// =====================================================================
+// PRODUCT CARD COMPONENT — dengan image slider
+// =====================================================================
 function ProductCard({ product, onSelect, rating }) {
   const [slide, setSlide] = useState(0);
   const hasImages = product.images && product.images.length > 0;
@@ -321,20 +264,22 @@ function ProductCard({ product, onSelect, rating }) {
                 left: "8px",
                 top: "50%",
                 transform: "translateY(-50%)",
-                background: "rgba(255,255,255,0.85)",
+                backgroundColor: "rgba(255,255,255,0.7)",
                 border: "none",
                 borderRadius: "50%",
-                width: "28px",
-                height: "28px",
-                fontSize: "16px",
+                width: "32px",
+                height: "32px",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                fontSize: "16px",
+                transition: "all 0.2s",
               }}
+              onMouseOver={(e) => (e.target.style.backgroundColor = "rgba(255,255,255,0.9)")}
+              onMouseOut={(e) => (e.target.style.backgroundColor = "rgba(255,255,255,0.7)")}
             >
-              ‹
+              ❮
             </button>
             <button
               onClick={nextSlide}
@@ -343,328 +288,245 @@ function ProductCard({ product, onSelect, rating }) {
                 right: "8px",
                 top: "50%",
                 transform: "translateY(-50%)",
-                background: "rgba(255,255,255,0.85)",
+                backgroundColor: "rgba(255,255,255,0.7)",
                 border: "none",
                 borderRadius: "50%",
-                width: "28px",
-                height: "28px",
-                fontSize: "16px",
+                width: "32px",
+                height: "32px",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                fontSize: "16px",
+                transition: "all 0.2s",
               }}
+              onMouseOver={(e) => (e.target.style.backgroundColor = "rgba(255,255,255,0.9)")}
+              onMouseOut={(e) => (e.target.style.backgroundColor = "rgba(255,255,255,0.7)")}
             >
-              ›
+              ❯
             </button>
-
-            {/* Dots indicator */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: "8px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                display: "flex",
-                gap: "5px",
-              }}
-            >
-              {product.images.map((_, i) => (
-                <div
-                  key={i}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSlide(i);
-                  }}
-                  style={{
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    backgroundColor: i === slide ? "#fff" : "rgba(255,255,255,0.5)",
-                    transition: "background 0.2s",
-                  }}
-                />
-              ))}
-            </div>
           </>
         )}
       </div>
 
       {/* INFO */}
-      <div style={{ padding: "20px" }}>
-        <div
-          style={{
-            fontSize: "11px",
-            color: "#AAAAAA",
-            letterSpacing: "1px",
-            textTransform: "uppercase",
-            marginBottom: "6px",
-          }}
-        >
+      <div style={{ padding: "16px" }}>
+        <p style={{ fontSize: "11px", color: "#C2552A", fontWeight: "600", letterSpacing: "1px", margin: 0 }}>
           {product.category}
-        </div>
-        <h3
-          style={{
-            fontSize: "18px",
-            fontWeight: "600",
-            color: "#2D1B0E",
-            marginBottom: "8px",
-            fontFamily: "'Cormorant Garamond', serif",
-          }}
-        >
+        </p>
+        <h3 style={{ fontSize: "15px", fontWeight: "600", color: "#2D1B0E", margin: "6px 0 8px" }}>
           {product.name}
         </h3>
-        <p
-          style={{
-            fontSize: "13px",
-            color: "#666666",
-            lineHeight: "1.5",
-            marginBottom: "12px",
-          }}
-        >
-          {product.desc.length > 80 ? product.desc.slice(0, 80) + "..." : product.desc}
-        </p>
-        {/* Rating */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: "16px", fontWeight: "700", color: "#C2552A" }}>
+            Rp {product.price.toLocaleString("id-ID")}
+          </span>
+          <span style={{ fontSize: "12px", color: "#A08060" }}>
+            {product.stock > 0 ? `${product.stock} stok` : "Habis"}
+          </span>
+        </div>
         {rating && rating.count > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" }}>
-            <SparkleRating value={Math.round(rating.average)} size={11} />
+          <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <SparkleRating value={Math.round(rating.average)} size={10} />
             <span style={{ fontSize: "11px", color: "#A08060" }}>
-              {rating.average.toFixed(1)} ({rating.count})
+              ({rating.count})
             </span>
           </div>
         )}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <span style={{ fontSize: "18px", fontWeight: "700", color: "#C2552A" }}>
-            {formatRupiah(product.price)}
-          </span>
-          <span style={{ fontSize: "11px", color: "#4CAF50" }}>
-            Stok {product.stock}
-          </span>
-        </div>
       </div>
     </motion.div>
   );
 }
 
-/* ============================================================
-   SIZE GUIDE MODAL COMPONENT
-============================================================ */
+// =====================================================================
+// SIZE GUIDE MODAL COMPONENT
+// =====================================================================
 function SizeGuideModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
+  const sizes = {
+    "2-3T": { cm: 92, age: "2-3 Tahun" },
+    "3-4T": { cm: 98, age: "3-4 Tahun" },
+    "4-5T": { cm: 104, age: "4-5 Tahun" },
+    "5-6T": { cm: 110, age: "5-6 Tahun" },
+    "6-7T": { cm: 116, age: "6-7 Tahun" },
+    "7-8T": { cm: 122, age: "7-8 Tahun" },
+    "8-9T": { cm: 128, age: "8-9 Tahun" },
+    XS: { cm: 130, age: "Remaja XS" },
+    S: { cm: 140, age: "Remaja S" },
+    M: { cm: 150, age: "Remaja M" },
+    L: { cm: 160, age: "Remaja L" },
+  };
 
   return (
     <motion.div
-      style={styles.overlay}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      animate={{ opacity: isOpen ? 1 : 0 }}
       exit={{ opacity: 0 }}
+      style={{
+        display: isOpen ? "flex" : "none",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+      }}
       onClick={onClose}
     >
       <motion.div
-        style={styles.sizeGuideModal}
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        transition={{ type: "spring", damping: 25 }}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderRadius: "12px",
+          padding: "32px",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          maxWidth: "500px",
+          width: "90%",
+        }}
       >
-        <div style={styles.sizeGuideHeader}>
-          <h2 style={styles.sizeGuideTitle}>{SIZE_GUIDE_DATA.title}</h2>
-          <button style={styles.closeButton} onClick={onClose}>✕</button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+          <h2 style={{ fontSize: "20px", fontWeight: "600", color: "#2D1B0E", margin: 0 }}>Panduan Ukuran</h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: "24px",
+              cursor: "pointer",
+              color: "#999999",
+            }}
+          >
+            ✕
+          </button>
         </div>
 
-        <p style={styles.sizeGuideDescription}>{SIZE_GUIDE_DATA.description}</p>
-
-        <div style={styles.sizeGuideTips}>
-          <h4 style={styles.sizeGuideSubtitle}>Tips Memilih Ukuran:</h4>
-          <ul style={styles.sizeGuideTipList}>
-            {SIZE_GUIDE_DATA.tips.map((tip, i) => (
-              <li key={i} style={styles.sizeGuideTipItem}>• {tip}</li>
-            ))}
-          </ul>
-        </div>
-
-        <h4 style={styles.sizeGuideSubtitle}>Tabel Ukuran (Rekomendasi):</h4>
-
-        <div style={styles.sizeGuideTableWrapper}>
-          <table style={styles.sizeGuideTable}>
-            <thead>
-              <tr>
-                <th style={styles.sizeGuideTh}>Usia</th>
-                <th style={styles.sizeGuideTh}>Tinggi Badan</th>
-                <th style={styles.sizeGuideTh}>Berat Badan</th>
-                <th style={styles.sizeGuideTh}>Lingkar Dada</th>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: "2px solid #F0EDE8" }}>
+              <th style={{ textAlign: "left", padding: "12px 0", color: "#2D1B0E", fontWeight: "600" }}>Ukuran</th>
+              <th style={{ textAlign: "left", padding: "12px 0", color: "#2D1B0E", fontWeight: "600" }}>Tinggi Badan</th>
+              <th style={{ textAlign: "left", padding: "12px 0", color: "#2D1B0E", fontWeight: "600" }}>Usia</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(sizes).map(([key, value], idx) => (
+              <tr key={idx} style={{ borderBottom: "1px solid #F0EDE8" }}>
+                <td style={{ padding: "12px 0", color: "#666666" }}>{key}</td>
+                <td style={{ padding: "12px 0", color: "#666666" }}>{value.cm} cm</td>
+                <td style={{ padding: "12px 0", color: "#666666" }}>{value.age}</td>
               </tr>
-            </thead>
-            <tbody>
-              {SIZE_GUIDE_DATA.measurements.map((row, i) => (
-                <tr key={i}>
-                  <td style={styles.sizeGuideTd}>{row.usia}</td>
-                  <td style={styles.sizeGuideTd}>{row.tinggi}</td>
-                  <td style={styles.sizeGuideTd}>{row.berat}</td>
-                  <td style={styles.sizeGuideTd}>{row.dada}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
 
-        <div style={styles.sizeGuideNote}>
-          <p style={styles.sizeGuideNoteText}>
-            *Catatan: Tabel ini adalah panduan umum. Setiap anak memiliki bentuk tubuh yang berbeda.
-            Jika ragu, pilih ukuran yang lebih besar atau hubungi kami.
-          </p>
-        </div>
-
-        <motion.button
-          style={styles.sizeGuideCloseButton}
-          whileHover={{ backgroundColor: "#A04420" }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onClose}
-        >
-          Tutup
-        </motion.button>
+        <p style={{ fontSize: "12px", color: "#A08060", marginTop: "20px", fontStyle: "italic" }}>
+          💡 Tips: Pilih ukuran berdasarkan tinggi badan anak. Jika tidak yakin, hubungi kami melalui WhatsApp.
+        </p>
       </motion.div>
     </motion.div>
   );
 }
 
-/* ============================================================
-   MAIN APP
-============================================================ */
+// =====================================================================
+// MAIN APP
+// =====================================================================
 export default function RekainStore() {
   const [currentPage, setCurrentPage] = useState("home");
-  const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedSize, setSelectedSize] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [orderData, setOrderData] = useState(null);
-  const [showSizeGuide, setShowSizeGuide] = useState(false);
-  const [ratings, setRatings] = useState({}); // { [productId]: { average, count } }
-  const [reviewForm, setReviewForm] = useState({ name: "", rating: 0, submitted: false, loading: false });
-  const [customerForm, setCustomerForm] = useState({
+  const [cart, setCart] = useState([]);
+  const [ratings, setRatings] = useState({});
+  const [reviewForm, setReviewForm] = useState({
+    submitted: false,
     name: "",
-    phone: "",
-    address: "",
-    note: "",
+    rating: 0,
+    comment: "",
   });
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const [cartSize, setCartSize] = useState(null);
+  const [paymentData, setPaymentData] = useState(null);
+  const [paymentUrl, setPaymentUrl] = useState(null);
 
-  /* ---------- SUPABASE: fetch ratings ---------- */
-  useEffect(() => {
-    const fetchRatings = async () => {
-      const { data, error } = await supabase
-        .from("reviews")
-        .select("product_id, rating");
-      if (error || !data) return;
-
-      const map = {};
-      data.forEach(({ product_id, rating }) => {
-        if (!map[product_id]) map[product_id] = { total: 0, count: 0 };
-        map[product_id].total += rating;
-        map[product_id].count += 1;
-      });
-
-      const result = {};
-      Object.entries(map).forEach(([id, { total, count }]) => {
-        result[id] = { average: total / count, count };
-      });
-      setRatings(result);
+  // Fetch ratings function
+  const fetchRatings = async () => {
+    // Here you'd typically fetch from an API
+    const mockRatings = {
+      1: { average: 4.8, count: 12 },
+      2: { average: 4.6, count: 8 },
+      3: { average: 4.5, count: 5 },
     };
-    fetchRatings();
-  }, []);
-
-  /* ---------- SUPABASE: submit review ---------- */
-  const submitReview = async (product) => {
-    if (!reviewForm.name.trim() || reviewForm.rating === 0) {
-      alert("Isi nama dan pilih rating dulu ya.");
-      return;
-    }
-    setReviewForm((prev) => ({ ...prev, loading: true }));
-    const { error } = await supabase.from("reviews").insert({
-      product_id: product.id,
-      reviewer_name: reviewForm.name.trim(),
-      rating: reviewForm.rating,
-    });
-    if (error) {
-      alert("Gagal mengirim review. Coba lagi.");
-      setReviewForm((prev) => ({ ...prev, loading: false }));
-      return;
-    }
-    // Refresh ratings
-    const { data } = await supabase
-      .from("reviews")
-      .select("product_id, rating")
-      .eq("product_id", product.id);
-    if (data) {
-      const total = data.reduce((s, r) => s + r.rating, 0);
-      setRatings((prev) => ({
-        ...prev,
-        [product.id]: { average: total / data.length, count: data.length },
-      }));
-    }
-    setReviewForm({ name: "", rating: 0, submitted: true, loading: false });
+    setRatings(mockRatings);
   };
 
-  const categories = ["all", "Kemeja", "Gaun", "Set"];
-  const filteredProducts =
-    categoryFilter === "all"
-      ? PRODUCTS
-      : PRODUCTS.filter((p) => p.category === categoryFilter);
+  // Submit review function
+  const submitReview = async (product) => {
+    if (reviewForm.rating === 0) {
+      alert("Silakan pilih bintang rating");
+      return;
+    }
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const shippingCost = cartTotal > 0 ? 15000 : 0;
-  const grandTotal = cartTotal + shippingCost;
+    // Update local ratings
+    const updatedRatings = { ...ratings };
+    if (!updatedRatings[product.id]) {
+      updatedRatings[product.id] = { average: 0, count: 0 };
+    }
 
+    const current = updatedRatings[product.id];
+    current.average = (current.average * current.count + reviewForm.rating) / (current.count + 1);
+    current.count += 1;
+
+    setRatings(updatedRatings);
+    setReviewForm({ submitted: true, name: "", rating: 0, comment: "" });
+
+    // Simulate API submission
+    setTimeout(() => {
+      setReviewForm({ submitted: false, name: "", rating: 0, comment: "" });
+    }, 2000);
+  };
+
+  // Add to cart function
   const addToCart = (product, size) => {
     if (!size) {
-      alert("Silakan pilih ukuran terlebih dahulu.");
+      alert("Silakan pilih ukuran");
       return;
     }
 
     const cartKey = `${product.id}-${size}`;
-    setCart((prev) => {
-      const existingItem = prev.find((item) => item.cartKey === cartKey);
-      if (existingItem) {
-        return prev.map((item) =>
-          item.cartKey === cartKey
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [
-        ...prev,
-        {
-          ...product,
-          cartKey,
-          selectedSize: size,
-          quantity: 1,
-        },
-      ];
-    });
+    const existing = cart.find((item) => item.cartKey === cartKey);
 
+    if (existing) {
+      updateQuantity(cartKey, 1);
+    } else {
+      setCart([
+        ...cart,
+        {
+          cartKey,
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          size,
+          quantity: 1,
+          images: product.images,
+        },
+      ]);
+    }
+
+    alert("Ditambahkan ke keranjang!");
     setSelectedProduct(null);
-    setSelectedSize("");
-    setIsCartOpen(true);
   };
 
   const updateQuantity = (cartKey, delta) => {
     setCart((prev) =>
-      prev.map((item) =>
-        item.cartKey === cartKey
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      )
+      prev
+        .map((item) =>
+          item.cartKey === cartKey ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+        )
+        .filter((item) => item.quantity > 0)
     );
   };
 
@@ -673,57 +535,26 @@ export default function RekainStore() {
   };
 
   const processPayment = async () => {
-    if (!customerForm.name || !customerForm.phone || !customerForm.address) {
-      alert("Mohon lengkapi data pengiriman terlebih dahulu.");
+    if (cart.length === 0) {
+      alert("Keranjang kosong");
       return;
     }
 
-    setIsProcessing(true);
-
-    const orderId = generateOrderId();
-    const newOrder = {
-      orderId,
-      orderDate: new Date().toLocaleString("id-ID"),
-      customer: customerForm,
-      items: [...cart],
-      subtotal: cartTotal,
-      shipping: shippingCost,
-      total: grandTotal,
+    const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const orderData = {
+      orderId: "RKN-" + Date.now(),
+      items: cart,
+      totalAmount,
+      timestamp: new Date().toISOString(),
     };
 
-    setOrderData(newOrder);
-
-    try {
-      const res = await fetch("/api/create-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId,
-          customerName: customerForm.name,
-          customerEmail: `${customerForm.phone}@rekain.com`,
-          items: cart.map((item) => ({
-            name: `${item.name} (${item.selectedSize})`,
-            qty: item.quantity,
-            price: item.price,
-          })),
-          total: grandTotal,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.invoiceUrl) {
-        throw new Error(data.error || "Gagal mendapatkan link pembayaran");
-      }
-
-      window.location.href = data.invoiceUrl;
-
-    } catch (err) {
-      console.error("Payment error:", err);
-      setIsProcessing(false);
-      alert("Gagal memproses pembayaran: " + err.message);
-    }
+    setPaymentData(orderData);
+    setCurrentPage("checkout");
   };
+
+  React.useEffect(() => {
+    fetchRatings();
+  }, []);
 
   return (
     <div style={styles.appContainer}>
@@ -767,160 +598,172 @@ export default function RekainStore() {
 
         <motion.button
           style={styles.cartButton}
-          onClick={() => setIsCartOpen(true)}
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
+          onClick={() => setCurrentPage("cart")}
+          className="no-print"
         >
-          <span>🛒</span>
-          {cartQuantity > 0 && (
-            <motion.span
-              style={styles.cartBadge}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-            >
-              {cartQuantity}
-            </motion.span>
-          )}
+          🛒
+          {cart.length > 0 && <span style={styles.cartBadge}>{cart.length}</span>}
         </motion.button>
       </motion.nav>
 
-      {/* Cart Sidebar */}
-      <AnimatePresence>
-        {isCartOpen && (
-          <motion.div
-            style={styles.overlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsCartOpen(false)}
-          >
-            <motion.div
-              style={styles.cartSidebar}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={styles.cartHeader}>
-                <h3 style={styles.cartTitle}>Keranjang Belanja</h3>
-                <button style={styles.closeButton} onClick={() => setIsCartOpen(false)}>✕</button>
-              </div>
+      {/* HOME PAGE */}
+      {currentPage === "home" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          {/* Hero Section */}
+          <section style={styles.heroSection}>
+            <div style={styles.heroOverlay} />
+            <div style={styles.heroContent}>
+              <motion.p
+                style={styles.heroBadge}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Tenunan kain perca, menautkan cerita.
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <motion.button
+                  style={styles.heroButton}
+                  whileHover={{ scale: 1.05, backgroundColor: "#A04420" }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setCurrentPage("shop")}
+                >
+                  Lihat Koleksi
+                </motion.button>
+              </motion.div>
+            </div>
+          </section>
 
-              {cart.length === 0 ? (
-                <div style={styles.emptyCart}>
-                  <p>Keranjang belanja masih kosong</p>
-                  <p style={{ fontSize: "13px", color: "#AAAAAA" }}>
-                    Yuk, pilihkan pakaian untuk si kecil
-                  </p>
+          {/* Values Section */}
+          <section style={styles.valuesSection}>
+            {[
+              { icon: "🌿", title: "Zero Waste", description: "Setiap potongan kain yang biasanya terbuang kami selamatkan" },
+              { icon: "👶", title: "Lembut di Kulit", description: "Bahan dipilih khusus untuk kenyamanan si kecil" },
+              { icon: "🧵", title: "Produk Lokal", description: "Dijahit oleh pengrajin Medan yang terpercaya" },
+              { icon: "💛", title: "Harga Terjangkau", description: "Kualitas terbaik dengan harga bersahabat" },
+            ].map((item, index) => (
+              <ScrollReveal key={index} delay={index * 0.1}>
+                <div style={styles.valueCard}>
+                  <div style={styles.valueIcon}>{item.icon}</div>
+                  <h3 style={styles.valueTitle}>{item.title}</h3>
+                  <p style={styles.valueDescription}>{item.description}</p>
                 </div>
-              ) : (
-                <>
-                  <div style={styles.cartItems}>
-                    {cart.map((item) => (
-                      <motion.div key={item.cartKey} style={styles.cartItem} layout>
-                        {/* Cart item thumbnail */}
-                        <div
-                          style={{
-                            ...styles.cartItemImage,
-                            backgroundColor: item.color,
-                            overflow: "hidden",
-                          }}
-                        >
-                          {item.images && item.images.length > 0 ? (
-                            <img
-                              src={item.images[0]}
-                              alt={item.name}
-                              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-                            />
-                          ) : null}
-                        </div>
-                        <div style={styles.cartItemDetails}>
-                          <h4 style={styles.cartItemName}>{item.name}</h4>
-                          <p style={styles.cartItemMeta}>Ukuran: {item.selectedSize}</p>
-                          <p style={styles.cartItemPrice}>{formatRupiah(item.price)}</p>
-                        </div>
-                        <div style={styles.cartItemActions}>
-                          <div style={styles.quantityControl}>
-                            <button
-                              style={styles.quantityButton}
-                              onClick={() => updateQuantity(item.cartKey, -1)}
-                            >
-                              -
-                            </button>
-                            <span style={styles.quantityValue}>{item.quantity}</span>
-                            <button
-                              style={styles.quantityButton}
-                              onClick={() => updateQuantity(item.cartKey, 1)}
-                            >
-                              +
-                            </button>
-                          </div>
-                          <button
-                            style={styles.removeButton}
-                            onClick={() => removeFromCart(item.cartKey)}
-                          >
-                            Hapus
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+              </ScrollReveal>
+            ))}
+          </section>
 
-                  <div style={styles.cartFooter}>
-                    <div style={styles.cartTotalRow}>
-                      <span>Subtotal</span>
-                      <span>{formatRupiah(cartTotal)}</span>
-                    </div>
-                    <div style={styles.cartTotalRow}>
-                      <span>Ongkos Kirim</span>
-                      <span>{formatRupiah(shippingCost)}</span>
-                    </div>
-                    <div style={styles.cartGrandTotal}>
-                      <span>Total</span>
-                      <span style={{ color: "#C2552A" }}>{formatRupiah(grandTotal)}</span>
-                    </div>
-                    <motion.button
-                      style={styles.checkoutButton}
-                      whileHover={{ backgroundColor: "#A04420" }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        setCurrentPage("checkout");
-                        setIsCartOpen(false);
-                      }}
-                    >
-                      Lanjut ke Pembayaran
-                    </motion.button>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <section style={styles.productsSection}>
+            <ScrollReveal>
+              <div style={styles.sectionHeader}>
+                <span style={styles.sectionBadge}>Koleksi Kami</span>
+                <h2 style={styles.sectionTitle}>Paling Banyak Dicari</h2>
+                <p style={styles.sectionSubtitle}>Produk yang paling sering dipilih para Bunda</p>
+              </div>
+            </ScrollReveal>
 
-      {/* Product Modal */}
-      <AnimatePresence>
-        {selectedProduct && (
-          <motion.div
-            style={styles.overlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedProduct(null)}
-          >
             <motion.div
-              style={styles.productModal}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
+              style={styles.productGrid}
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
             >
-              {/* Modal image — tampilkan foto asli */}
+              {PRODUCTS.slice(0, 3).map((product) => (
+                <ScrollReveal key={product.id}>
+                  <ProductCard
+                    product={product}
+                    onSelect={setSelectedProduct}
+                    rating={ratings[product.id]}
+                  />
+                </ScrollReveal>
+              ))}
+            </motion.div>
+
+            <div style={styles.viewAllContainer}>
+              <motion.button
+                style={styles.viewAllButton}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCurrentPage("shop")}
+              >
+                Lihat Semua Produk
+              </motion.button>
+            </div>
+          </section>
+        </motion.div>
+      )}
+
+      {/* SHOP PAGE */}
+      {currentPage === "shop" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={styles.shopPage}>
+          <div style={styles.shopContainer}>
+            <div style={styles.shopHeader}>
+              <h1 style={styles.shopTitle}>Koleksi Lengkap</h1>
+              <p style={styles.shopSubtitle}>Temukan pakaian impian untuk si kecil</p>
+            </div>
+
+            <div style={styles.productGrid}>
+              {PRODUCTS.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onSelect={setSelectedProduct}
+                  rating={ratings[product.id]}
+                />
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* PRODUCT DETAIL MODAL */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: selectedProduct ? 1 : 0 }}
+        exit={{ opacity: 0 }}
+        style={{
+          display: selectedProduct ? "flex" : "none",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 999,
+          padding: "20px",
+        }}
+        onClick={() => setSelectedProduct(null)}
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: "12px",
+            overflow: "auto",
+            maxHeight: "90vh",
+            maxWidth: "600px",
+            width: "100%",
+          }}
+        >
+          {selectedProduct && (
+            <div>
+              {/* Product Images Slider */}
               <div
                 style={{
-                  ...styles.modalImage,
+                  height: "350px",
                   backgroundColor: selectedProduct.color,
+                  position: "relative",
                   overflow: "hidden",
                 }}
               >
@@ -932,70 +775,109 @@ export default function RekainStore() {
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
-                      objectPosition: "top center",
                     }}
                   />
                 ) : (
-                  <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: "64px", opacity: 0.3 }}>👕</span>
+                  <div
+                    style={{
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <span style={{ fontSize: "80px", opacity: 0.3 }}>👕</span>
                   </div>
                 )}
               </div>
 
-              <div style={styles.modalContent}>
-                <div style={styles.modalHeader}>
-                  <div>
-                    <span style={styles.modalCategory}>{selectedProduct.category}</span>
-                    <h2 style={styles.modalTitle}>{selectedProduct.name}</h2>
+              {/* Product Info */}
+              <div style={{ padding: "32px 24px" }}>
+                <p style={{ fontSize: "11px", color: "#C2552A", fontWeight: "600", letterSpacing: "1px", margin: 0 }}>
+                  {selectedProduct.category}
+                </p>
+                <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#2D1B0E", margin: "12px 0 8px" }}>
+                  {selectedProduct.name}
+                </h1>
+
+                {/* Rating */}
+                {ratings[selectedProduct.id] && ratings[selectedProduct.id].count > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                    <SparkleRating value={Math.round(ratings[selectedProduct.id].average)} size={14} />
+                    <span style={{ fontSize: "12px", color: "#A08060" }}>
+                      {ratings[selectedProduct.id].average.toFixed(1)} dari {ratings[selectedProduct.id].count} ulasan
+                    </span>
                   </div>
-                  <button
-                    style={styles.closeButton}
-                    onClick={() => setSelectedProduct(null)}
-                  >
-                    ✕
-                  </button>
+                )}
+
+                <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "20px" }}>
+                  <span style={{ fontSize: "28px", fontWeight: "700", color: "#C2552A" }}>
+                    Rp {selectedProduct.price.toLocaleString("id-ID")}
+                  </span>
+                  <span style={{ fontSize: "13px", color: "#A08060" }}>
+                    {selectedProduct.stock > 0 ? `${selectedProduct.stock} stok tersedia` : "Habis"}
+                  </span>
                 </div>
 
-                <p style={styles.modalDescription}>{selectedProduct.desc}</p>
-                <div style={styles.modalPrice}>{formatRupiah(selectedProduct.price)}</div>
+                <p style={{ fontSize: "13px", color: "#666666", lineHeight: "1.6", marginBottom: "24px" }}>
+                  {selectedProduct.desc}
+                </p>
 
-                <div style={styles.sizeSection}>
-                  <div style={styles.sizeSectionHeader}>
-                    <label style={styles.sizeLabel}>Pilih Ukuran</label>
-                    <button
-                      style={styles.sizeGuideLink}
-                      onClick={() => setShowSizeGuide(true)}
-                    >
-                      📏 Panduan Ukuran
-                    </button>
-                  </div>
-                  <div style={styles.sizeOptions}>
-                    {selectedProduct.sizes.map((size) => (
+                {/* Size Selection */}
+                {selectedProduct.sizes.length > 0 && (
+                  <div style={{ marginBottom: "24px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: "600", color: "#2D1B0E" }}>PILIH UKURAN</label>
                       <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
+                        onClick={() => setSizeGuideOpen(true)}
                         style={{
-                          ...styles.sizeButton,
-                          ...(selectedSize === size && styles.sizeButtonActive),
+                          background: "none",
+                          border: "none",
+                          fontSize: "11px",
+                          color: "#C2552A",
+                          cursor: "pointer",
+                          textDecoration: "underline",
                         }}
                       >
-                        {size}
+                        Panduan Ukuran
                       </button>
-                    ))}
+                    </div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      {selectedProduct.sizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setCartSize(size)}
+                          style={{
+                            padding: "10px 16px",
+                            backgroundColor: cartSize === size ? "#C2552A" : "#F5F0E8",
+                            color: cartSize === size ? "#FFFFFF" : "#2D1B0E",
+                            border: "1px solid #EEEEEE",
+                            borderRadius: "6px",
+                            fontSize: "13px",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
+                {/* Add to Cart Button */}
                 <motion.button
-                  style={styles.addToCartButton}
-                  whileHover={{ backgroundColor: "#A04420" }}
+                  style={styles.heroButton}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => addToCart(selectedProduct, selectedSize)}
+                  onClick={() => addToCart(selectedProduct, cartSize)}
                 >
-                  Tambah ke Keranjang
+                  🛒 Masukkan Keranjang
                 </motion.button>
 
-                {/* ── REVIEW SECTION ── */}
-                <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #F0EDE8" }}>
+                {/* Review Section */}
+                <div style={{ marginTop: "32px", borderTop: "1px solid #F0EDE8", paddingTop: "24px" }}>
                   <p style={{ fontSize: "12px", fontWeight: "600", color: "#2D1B0E", marginBottom: "12px", letterSpacing: "0.5px" }}>
                     BERI PENILAIAN
                   </p>
@@ -1011,429 +893,307 @@ export default function RekainStore() {
                   )}
 
                   {reviewForm.submitted ? (
-                    <p style={{ fontSize: "13px", color: "#4A7C59", fontStyle: "italic" }}>
-                      ✦ Terima kasih atas penilaianmu!
-                    </p>
+                    <div style={{ backgroundColor: "#F0F0F0", padding: "12px", borderRadius: "6px", textAlign: "center" }}>
+                      <p style={{ fontSize: "12px", color: "#2D1B0E", margin: 0 }}>✓ Terima kasih atas ulasan Anda!</p>
+                    </div>
                   ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                      <input
-                        type="text"
-                        placeholder="Nama kamu"
-                        value={reviewForm.name}
-                        onChange={(e) => setReviewForm((prev) => ({ ...prev, name: e.target.value }))}
-                        style={{ padding: "10px 12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", outline: "none" }}
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <SparkleRating
+                        value={reviewForm.rating}
+                        max={5}
+                        size={16}
+                        interactive={true}
+                        onChange={(val) => setReviewForm({ ...reviewForm, rating: val })}
                       />
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <SparkleRating
-                          value={reviewForm.rating}
-                          size={20}
-                          interactive
-                          onChange={(val) => setReviewForm((prev) => ({ ...prev, rating: val }))}
-                        />
-                        <span style={{ fontSize: "12px", color: "#A08060" }}>
-                          {reviewForm.rating > 0 ? ["", "Buruk", "Kurang", "Cukup", "Bagus", "Sempurna"][reviewForm.rating] : "Pilih rating"}
-                        </span>
-                      </div>
                       <motion.button
-                        whileHover={{ backgroundColor: "#7A5038" }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => submitReview(selectedProduct)}
-                        disabled={reviewForm.loading}
-                        style={{ padding: "10px", backgroundColor: "#4A2A1A", color: "#F5EFE6", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer", letterSpacing: "0.5px" }}
+                        style={{
+                          padding: "6px 16px",
+                          backgroundColor: "#C2552A",
+                          color: "#FFFFFF",
+                          border: "none",
+                          borderRadius: "20px",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                        }}
                       >
-                        {reviewForm.loading ? "Mengirim..." : "Kirim Penilaian ✦"}
+                        Kirim
                       </motion.button>
                     </div>
                   )}
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Size Guide Modal */}
-      <AnimatePresence>
-        {showSizeGuide && (
-          <SizeGuideModal
-            isOpen={showSizeGuide}
-            onClose={() => setShowSizeGuide(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Loading Overlay */}
-      <AnimatePresence>
-        {isProcessing && (
-          <motion.div
-            style={styles.loadingOverlay}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              style={styles.loadingSpinner}
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            />
-            <p style={styles.loadingText}>Memproses pesanan Anda...</p>
-            <p style={{ fontSize: "12px", color: "#AAAAAA" }}>
-              Anda akan diarahkan ke halaman pembayaran Xendit
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Pages */}
-      <AnimatePresence mode="wait">
-        {/* Home Page */}
-        {currentPage === "home" && (
-          <motion.div
-            key="home"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <section style={styles.heroSection}>
-              <div style={styles.heroOverlay} />
-              <div style={styles.heroContent}>
-                <motion.p
-                  style={styles.heroBadge}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  Tenunan kain perca, menautkan cerita.
-                </motion.p>
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <motion.button
-                    style={styles.heroButton}
-                    whileHover={{ scale: 1.05, backgroundColor: "#A04420" }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setCurrentPage("shop")}
-                  >
-                    Lihat Koleksi
-                  </motion.button>
-                </motion.div>
-              </div>
-            </section>
-
-            <section style={styles.valuesSection}>
-              {[
-                { icon: "🌿", title: "Zero Waste", description: "Setiap potongan kain yang biasanya terbuang kami selamatkan" },
-                { icon: "👶", title: "Lembut di Kulit", description: "Bahan dipilih khusus untuk kenyamanan si kecil" },
-                { icon: "🧵", title: "Produk Lokal", description: "Dijahit oleh pengrajin Medan yang terpercaya" },
-                { icon: "💛", title: "Harga Terjangkau", description: "Kualitas terbaik dengan harga bersahabat" },
-              ].map((item, index) => (
-                <ScrollReveal key={index} delay={index * 0.1}>
-                  <div style={styles.valueCard}>
-                    <div style={styles.valueIcon}>{item.icon}</div>
-                    <h3 style={styles.valueTitle}>{item.title}</h3>
-                    <p style={styles.valueDescription}>{item.description}</p>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </section>
-
-            <section style={styles.productsSection}>
-              <ScrollReveal>
-                <div style={styles.sectionHeader}>
-                  <span style={styles.sectionBadge}>Koleksi Kami</span>
-                  <h2 style={styles.sectionTitle}>Paling Banyak Dicari</h2>
-                  <p style={styles.sectionSubtitle}>Produk yang paling sering dipilih para Bunda</p>
-                </div>
-              </ScrollReveal>
-
-              <motion.div
-                style={styles.productGrid}
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedProduct(null)}
+                style={{
+                  position: "absolute",
+                  top: "16px",
+                  right: "16px",
+                  background: "rgba(255,255,255,0.9)",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "36px",
+                  height: "36px",
+                  fontSize: "20px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                }}
               >
-                {PRODUCTS.slice(0, 3).map((product) => (
-                  <ProductCard key={product.id} product={product} onSelect={(p) => { setSelectedProduct(p); setReviewForm({ name: "", rating: 0, submitted: false, loading: false }); }} rating={ratings[product.id]} />
-                ))}
-              </motion.div>
+                ✕
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
 
-              <div style={styles.viewAllContainer}>
+      {/* SIZE GUIDE MODAL */}
+      <SizeGuideModal isOpen={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
+
+      {/* CART PAGE */}
+      {currentPage === "cart" && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={styles.cartPage}>
+          <div style={styles.cartContainer}>
+            <h1 style={styles.cartTitle}>🛒 Keranjang Belanja</h1>
+
+            {cart.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                <p style={{ fontSize: "16px", color: "#888888", marginBottom: "20px" }}>Keranjang kosong</p>
                 <motion.button
-                  style={styles.viewAllButton}
+                  style={styles.heroButton}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setCurrentPage("shop")}
                 >
-                  Lihat Semua Koleksi
+                  Lanjut Belanja
                 </motion.button>
               </div>
-            </section>
-
-            <footer style={styles.footer}>
-              <div style={styles.footerContent}>
-                <div style={styles.footerLogo}>REKAIN FASHION</div>
-                <p style={styles.footerTagline}>Dari Kain Sisa, Lahir Karya Bermakna</p>
-                <p style={styles.footerCopyright}>© 2024 Rekain Fashion · Medan, Sumatera Utara</p>
-              </div>
-            </footer>
-          </motion.div>
-        )}
-
-        {/* Shop Page */}
-        {currentPage === "shop" && (
-          <motion.div
-            key="shop"
-            style={styles.shopPage}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <div style={styles.shopHeader}>
-              <h1 style={styles.shopTitle}>Semua Koleksi</h1>
-              <p style={styles.shopSubtitle}>Pilih pakaian terbaik untuk si kecil</p>
-            </div>
-
-            <div style={styles.categoryFilter}>
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setCategoryFilter(category)}
-                  style={{
-                    ...styles.filterButton,
-                    ...(categoryFilter === category && styles.filterButtonActive),
-                  }}
-                >
-                  {category === "all" ? "Semua" : category}
-                </button>
-              ))}
-            </div>
-
-            <motion.div
-              style={styles.productGrid}
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              key={categoryFilter}
-            >
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} onSelect={(p) => { setSelectedProduct(p); setReviewForm({ name: "", rating: 0, submitted: false, loading: false }); }} rating={ratings[product.id]} />
-              ))}
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* Checkout Page */}
-        {currentPage === "checkout" && (
-          <motion.div
-            key="checkout"
-            style={styles.checkoutPage}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <div style={styles.checkoutContainer}>
-              <h1 style={styles.checkoutTitle}>Informasi Pengiriman</h1>
-              <p style={styles.checkoutSubtitle}>
-                Lengkapi data di bawah untuk melanjutkan pembayaran via Xendit
-              </p>
-
-              <div style={styles.checkoutGrid}>
-                <div style={styles.checkoutForm}>
-                  <div style={styles.formGroup}>
-                    <label style={styles.formLabel}>Nama Lengkap</label>
-                    <input
-                      type="text"
-                      style={styles.formInput}
-                      placeholder="Nama penerima"
-                      value={customerForm.name}
-                      onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                    />
-                  </div>
-
-                  <div style={styles.formGroup}>
-                    <label style={styles.formLabel}>Nomor WhatsApp</label>
-                    <input
-                      type="tel"
-                      style={styles.formInput}
-                      placeholder="08123456789"
-                      value={customerForm.phone}
-                      onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                    />
-                  </div>
-
-                  <div style={styles.formGroup}>
-                    <label style={styles.formLabel}>Alamat Lengkap</label>
-                    <textarea
-                      rows={3}
-                      style={styles.formTextarea}
-                      placeholder="Jl. ..., Kecamatan, Kota, Kode Pos"
-                      value={customerForm.address}
-                      onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
-                    />
-                  </div>
-
-                  <div style={styles.formGroup}>
-                    <label style={styles.formLabel}>Catatan (Opsional)</label>
-                    <textarea
-                      rows={2}
-                      style={styles.formTextarea}
-                      placeholder="Misal: request ukuran, warna, dll"
-                      value={customerForm.note}
-                      onChange={(e) => setCustomerForm({ ...customerForm, note: e.target.value })}
-                    />
-                  </div>
-
-                  <div style={styles.paymentInfo}>
-                    <p style={styles.paymentInfoTitle}>💳 Metode Pembayaran Tersedia</p>
-                    <p style={styles.paymentInfoDesc}>
-                      Transfer Bank (BCA, BNI, BRI, Mandiri) · QRIS · GoPay · OVO · DANA · ShopeePay · Kartu Kredit
-                    </p>
-                  </div>
-                </div>
-
-                <div style={styles.orderSummary}>
-                  <h3 style={styles.summaryTitle}>Ringkasan Pesanan</h3>
-
+            ) : (
+              <>
+                <div style={styles.cartItems}>
                   {cart.map((item) => (
-                    <div key={item.cartKey} style={styles.summaryItem}>
-                      <div>
-                        <p style={styles.summaryItemName}>{item.name}</p>
-                        <p style={styles.summaryItemMeta}>
-                          Ukuran {item.selectedSize} x {item.quantity}
-                        </p>
+                    <div key={item.cartKey} style={styles.cartItem}>
+                      <div style={{ display: "flex", gap: "16px", flex: 1 }}>
+                        {item.images && item.images.length > 0 ? (
+                          <img
+                            src={item.images[0]}
+                            alt={item.name}
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              objectFit: "cover",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: "80px",
+                              height: "80px",
+                              backgroundColor: "#F5F0E8",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "8px",
+                            }}
+                          >
+                            👕
+                          </div>
+                        )}
+
+                        <div style={{ flex: 1 }}>
+                          <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#2D1B0E", margin: 0 }}>
+                            {item.name}
+                          </h3>
+                          <p style={{ fontSize: "12px", color: "#A08060", margin: "4px 0" }}>Ukuran: {item.size}</p>
+                          <p style={{ fontSize: "13px", fontWeight: "600", color: "#C2552A", margin: "4px 0" }}>
+                            Rp {item.price.toLocaleString("id-ID")}
+                          </p>
+
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                            <button
+                              onClick={() => updateQuantity(item.cartKey, -1)}
+                              style={{
+                                width: "24px",
+                                height: "24px",
+                                backgroundColor: "#F5F0E8",
+                                border: "1px solid #EEEEEE",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                              }}
+                            >
+                              −
+                            </button>
+                            <span style={{ fontSize: "12px", fontWeight: "600", minWidth: "20px", textAlign: "center" }}>
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(item.cartKey, 1)}
+                              style={{
+                                width: "24px",
+                                height: "24px",
+                                backgroundColor: "#F5F0E8",
+                                border: "1px solid #EEEEEE",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <p style={styles.summaryItemPrice}>
-                        {formatRupiah(item.price * item.quantity)}
-                      </p>
+
+                      <button
+                        onClick={() => removeFromCart(item.cartKey)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          fontSize: "18px",
+                          cursor: "pointer",
+                          color: "#C2552A",
+                          padding: 0,
+                        }}
+                      >
+                        🗑️
+                      </button>
                     </div>
                   ))}
+                </div>
 
-                  <div style={styles.summaryDivider} />
-
+                {/* Cart Summary */}
+                <div style={styles.cartSummary}>
                   <div style={styles.summaryRow}>
-                    <span>Subtotal</span>
-                    <span>{formatRupiah(cartTotal)}</span>
+                    <span>Subtotal:</span>
+                    <span>
+                      Rp {cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString("id-ID")}
+                    </span>
                   </div>
                   <div style={styles.summaryRow}>
-                    <span>Ongkos Kirim</span>
-                    <span>{formatRupiah(shippingCost)}</span>
+                    <span>Ongkir:</span>
+                    <span>Rp 0</span>
                   </div>
                   <div style={styles.summaryTotal}>
-                    <span>Total</span>
-                    <span style={{ color: "#C2552A" }}>{formatRupiah(grandTotal)}</span>
+                    <span>Total:</span>
+                    <span>
+                      Rp {cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toLocaleString("id-ID")}
+                    </span>
                   </div>
-
-                  <motion.button
-                    style={styles.processButton}
-                    whileHover={{ backgroundColor: "#A04420" }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={processPayment}
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? "Memproses..." : "Bayar via Xendit"}
-                  </motion.button>
-
-                  <p style={styles.xenditNote}>
-                    🔒 Pembayaran aman diproses oleh Xendit
-                  </p>
                 </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
 
-        {/* Receipt Page */}
-        {currentPage === "receipt" && orderData && (
-          <motion.div
-            key="receipt"
-            style={styles.receiptPage}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <div style={styles.receiptContainer}>
-              <div style={styles.receiptHeader}>
-                <h1 style={styles.receiptLogo}>REKAIN FASHION</h1>
-                <p style={styles.receiptTagline}>Sustainable Local Fashion</p>
-                <p style={styles.receiptMeta}>Medan, Sumatera Utara</p>
-              </div>
+                <motion.button
+                  style={styles.processButton}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={processPayment}
+                >
+                  Lanjutkan ke Pembayaran
+                </motion.button>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
 
-              <div style={styles.receiptInfo}>
-                <div style={styles.receiptInfoRow}>
-                  <span>Nomor Order</span>
-                  <strong>{orderData.orderId}</strong>
-                </div>
-                <div style={styles.receiptInfoRow}>
-                  <span>Tanggal</span>
-                  <span>{orderData.orderDate}</span>
-                </div>
-                <div style={styles.receiptInfoRow}>
-                  <span>Nama</span>
-                  <span>{orderData.customer.name}</span>
-                </div>
-              </div>
+      {/* CHECKOUT PAGE */}
+      {currentPage === "checkout" && paymentData && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={styles.cartPage}>
+          <div style={styles.cartContainer}>
+            <h1 style={styles.cartTitle}>💳 Pembayaran</h1>
 
-              <div style={styles.receiptItems}>
-                <h3 style={styles.receiptSectionTitle}>Detail Produk</h3>
-                {orderData.items.map((item) => (
-                  <div key={item.cartKey} style={styles.receiptItem}>
-                    <div>
-                      <p style={styles.receiptItemName}>{item.name}</p>
-                      <p style={styles.receiptItemMeta}>
-                        Ukuran {item.selectedSize} x {item.quantity}
+            <div style={styles.cartItems}>
+              {paymentData.items.map((item) => (
+                <div key={item.cartKey} style={styles.cartItem}>
+                  <div style={{ display: "flex", gap: "16px", flex: 1 }}>
+                    {item.images && item.images.length > 0 ? (
+                      <img
+                        src={item.images[0]}
+                        alt={item.name}
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          backgroundColor: "#F5F0E8",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        👕
+                      </div>
+                    )}
+
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#2D1B0E", margin: 0 }}>
+                        {item.name}
+                      </h3>
+                      <p style={{ fontSize: "12px", color: "#A08060", margin: "4px 0" }}>Ukuran: {item.size}</p>
+                      <p style={{ fontSize: "13px", fontWeight: "600", color: "#C2552A", margin: "4px 0" }}>
+                        Rp {item.price.toLocaleString("id-ID")} × {item.quantity}
                       </p>
                     </div>
-                    <p style={styles.receiptItemPrice}>
-                      {formatRupiah(item.price * item.quantity)}
-                    </p>
                   </div>
-                ))}
-              </div>
-
-              <div style={styles.receiptTotals}>
-                <div style={styles.receiptRow}>
-                  <span>Subtotal</span>
-                  <span>{formatRupiah(orderData.subtotal)}</span>
                 </div>
-                <div style={styles.receiptRow}>
-                  <span>Ongkos Kirim</span>
-                  <span>{formatRupiah(orderData.shipping)}</span>
-                </div>
-                <div style={styles.receiptGrandTotal}>
-                  <span>Total</span>
-                  <span style={{ color: "#C2552A" }}>{formatRupiah(orderData.total)}</span>
-                </div>
-              </div>
-
-              <div style={styles.receiptAddress}>
-                <h4 style={styles.receiptAddressTitle}>Alamat Pengiriman</h4>
-                <p>{orderData.customer.address}</p>
-                <p>WhatsApp: {orderData.customer.phone}</p>
-                {orderData.customer.note && (
-                  <p style={styles.receiptNote}>Catatan: {orderData.customer.note}</p>
-                )}
-              </div>
-
-              <div style={styles.receiptFooter}>
-                <p>Terima kasih sudah berbelanja di Rekain Fashion</p>
-                <p>Pesanan akan diproses setelah pembayaran terverifikasi</p>
-              </div>
-
-              <motion.button
-                style={styles.receiptCloseButton}
-                whileHover={{ backgroundColor: "#A04420" }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setCurrentPage("home")}
-              >
-                Kembali ke Beranda
-              </motion.button>
+              ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            {/* Payment Summary */}
+            <div style={styles.cartSummary}>
+              <div style={styles.summaryRow}>
+                <span>Total Pembayaran:</span>
+                <span style={{ fontWeight: "700", color: "#C2552A", fontSize: "16px" }}>
+                  Rp {paymentData.totalAmount.toLocaleString("id-ID")}
+                </span>
+              </div>
+            </div>
+
+            <motion.button
+              style={styles.processButton}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                alert("Pembayaran melalui Xendit dipromosikan di sini");
+                setCurrentPage("home");
+                setCart([]);
+              }}
+            >
+              Bayar Sekarang (Xendit)
+            </motion.button>
+            <p style={styles.xenditNote}>Anda akan diarahkan ke gateway pembayaran Xendit</p>
+
+            <motion.button
+              style={{
+                ...styles.processButton,
+                backgroundColor: "#999999",
+                marginTop: "12px",
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setCurrentPage("cart")}
+            >
+              Kembali ke Keranjang
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
@@ -1443,76 +1203,17 @@ export default function RekainStore() {
 ============================================================ */
 const styles = {
   appContainer: { minHeight: "100vh", backgroundColor: "#FAFAF7" },
-  navbar: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 5%", height: "70px", backgroundColor: "#FFFFFF", borderBottom: "1px solid #F0EDE8", position: "sticky", top: 0, zIndex: 100 },
-  logoArea: { display: "flex", alignItems: "baseline", gap: "8px", cursor: "pointer" },
-  logo: { fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontWeight: "700", color: "#2D1B0E", letterSpacing: "2px" },
-  logoSub: { fontSize: "10px", letterSpacing: "3px", color: "#C2552A", textTransform: "uppercase" },
-  navLinks: { display: "flex", gap: "32px" },
+  navbar: { padding: "16px 40px", backgroundColor: "#FFFFFF", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #F0EDE8", position: "sticky", top: 0, zIndex: 100 },
+  logoArea: { cursor: "pointer", display: "flex", flexDirection: "column", gap: 0 },
+  logo: { fontSize: "20px", fontWeight: "700", color: "#2D1B0E", fontFamily: "'Cormorant Garamond', serif", margin: 0 },
+  logoSub: { fontSize: "10px", color: "#C2552A", fontWeight: "600", letterSpacing: "2px" },
+  navLinks: { display: "flex", gap: "32px", justifyContent: "center", flex: 1 },
   navLink: { background: "none", border: "none", fontSize: "13px", fontWeight: "500", color: "#555555", cursor: "pointer", padding: "8px 0", transition: "color 0.2s" },
   navLinkActive: { color: "#C2552A", borderBottom: "2px solid #C2552A" },
   cartButton: { background: "none", border: "none", fontSize: "22px", cursor: "pointer", position: "relative" },
   cartBadge: { position: "absolute", top: "-8px", right: "-12px", backgroundColor: "#C2552A", color: "#FFFFFF", fontSize: "10px", fontWeight: "600", width: "18px", height: "18px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" },
-  overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "flex-end" },
-  closeButton: { background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#888888" },
-  cartSidebar: { width: "400px", maxWidth: "90vw", height: "100%", backgroundColor: "#FFFFFF", display: "flex", flexDirection: "column" },
-  cartHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px", borderBottom: "1px solid #EEEEEE" },
-  cartTitle: { fontSize: "18px", fontWeight: "600", color: "#2D1B0E" },
-  emptyCart: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", color: "#AAAAAA" },
-  cartItems: { flex: 1, overflowY: "auto", padding: "20px" },
-  cartItem: { display: "flex", gap: "12px", padding: "12px 0", borderBottom: "1px solid #F0EDE8" },
-  cartItemImage: { width: "60px", height: "60px", borderRadius: "8px" },
-  cartItemDetails: { flex: 1 },
-  cartItemName: { fontSize: "14px", fontWeight: "600", color: "#2D1B0E", marginBottom: "4px" },
-  cartItemMeta: { fontSize: "12px", color: "#888888", marginBottom: "4px" },
-  cartItemPrice: { fontSize: "13px", fontWeight: "600", color: "#C2552A" },
-  cartItemActions: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" },
-  quantityControl: { display: "flex", alignItems: "center", gap: "8px" },
-  quantityButton: { width: "28px", height: "28px", borderRadius: "6px", border: "1px solid #DDDDDD", background: "#FFFFFF", cursor: "pointer" },
-  quantityValue: { fontSize: "14px", fontWeight: "500", minWidth: "24px", textAlign: "center" },
-  removeButton: { background: "none", border: "none", fontSize: "11px", color: "#CCCCCC", cursor: "pointer" },
-  cartFooter: { padding: "20px", borderTop: "1px solid #EEEEEE", backgroundColor: "#FAFAF7" },
-  cartTotalRow: { display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px", color: "#666666" },
-  cartGrandTotal: { display: "flex", justifyContent: "space-between", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #EEEEEE", fontSize: "16px", fontWeight: "700" },
-  checkoutButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "16px" },
-  productModal: { width: "90%", maxWidth: "500px", maxHeight: "90vh", backgroundColor: "#FFFFFF", borderRadius: "16px", overflowY: "auto", margin: "auto" },
-  modalImage: { height: "260px", display: "flex", alignItems: "center", justifyContent: "center" },
-  modalContent: { padding: "24px" },
-  modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" },
-  modalCategory: { fontSize: "11px", color: "#AAAAAA", letterSpacing: "1px", textTransform: "uppercase" },
-  modalTitle: { fontSize: "22px", fontWeight: "600", color: "#2D1B0E", marginTop: "4px" },
-  modalDescription: { fontSize: "13px", color: "#666666", lineHeight: "1.6", marginBottom: "16px" },
-  modalPrice: { fontSize: "24px", fontWeight: "700", color: "#C2552A", marginBottom: "20px" },
-  sizeSection: { marginBottom: "24px" },
-  sizeSectionHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" },
-  sizeLabel: { fontSize: "12px", fontWeight: "600", color: "#333333" },
-  sizeGuideLink: { background: "none", border: "none", fontSize: "11px", color: "#C2552A", textDecoration: "underline", cursor: "pointer" },
-  sizeOptions: { display: "flex", flexWrap: "wrap", gap: "10px" },
-  sizeButton: { padding: "8px 16px", border: "1.5px solid #DDDDDD", background: "#FFFFFF", borderRadius: "8px", fontSize: "12px", cursor: "pointer", transition: "all 0.2s" },
-  sizeButtonActive: { borderColor: "#C2552A", backgroundColor: "#C2552A", color: "#FFFFFF" },
-  addToCartButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer" },
-  sizeGuideModal: { backgroundColor: "#FFFFFF", borderRadius: "16px", width: "90%", maxWidth: "700px", maxHeight: "85vh", overflowY: "auto", padding: "24px", margin: "auto" },
-  sizeGuideHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #EEEEEE", paddingBottom: "12px" },
-  sizeGuideTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: "600", color: "#2D1B0E" },
-  sizeGuideDescription: { fontSize: "13px", color: "#666666", marginBottom: "20px", lineHeight: "1.6" },
-  sizeGuideTips: { backgroundColor: "#FFF8F2", padding: "16px", borderRadius: "12px", marginBottom: "20px" },
-  sizeGuideSubtitle: { fontSize: "14px", fontWeight: "600", color: "#2D1B0E", marginBottom: "10px" },
-  sizeGuideTipList: { listStyle: "none", padding: 0, margin: 0 },
-  sizeGuideTipItem: { fontSize: "13px", color: "#555555", marginBottom: "8px", paddingLeft: "8px" },
-  sizeGuideTableWrapper: { overflowX: "auto", marginBottom: "20px" },
-  sizeGuideTable: { width: "100%", borderCollapse: "collapse", fontSize: "12px" },
-  sizeGuideTh: { backgroundColor: "#F5F0E8", padding: "10px 8px", textAlign: "left", fontWeight: "600", color: "#2D1B0E", borderBottom: "1px solid #E8E0D0" },
-  sizeGuideTd: { padding: "8px", borderBottom: "1px solid #EEEEEE", color: "#555555" },
-  sizeGuideNote: { backgroundColor: "#FAFAF7", padding: "12px", borderRadius: "8px", marginBottom: "20px" },
-  sizeGuideNoteText: { fontSize: "11px", color: "#888888", lineHeight: "1.5", margin: 0 },
-  sizeGuideCloseButton: { backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", padding: "12px 24px", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", width: "100%" },
-  loadingOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.9)", zIndex: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" },
-  loadingSpinner: { width: "40px", height: "40px", border: "3px solid #F0EDE8", borderTopColor: "#C2552A", borderRadius: "50%" },
-  loadingText: { fontSize: "14px", color: "#666666" },
   heroSection: { position: "relative", minHeight: "560px", display: "flex", alignItems: "flex-end", justifyContent: "center", textAlign: "center", backgroundImage: "url('/rekain-hero.jpeg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" },
   heroOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(to top, rgba(20,10,2,0.80) 0%, rgba(20,10,2,0.15) 60%, transparent 100%)" },
-  heroContent: { position: "relative", padding: "48px 20px", maxWidth: "600px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" },
-  heroBadge: { fontSize: "14px", letterSpacing: "2px", color: "#E8D5B7", fontStyle: "italic", margin: 0 },
-  heroContent: { position: "relative", padding: "60px 20px", maxWidth: "700px", margin: "0 auto" },
   heroBadge: { display: "inline-block", fontSize: "11px", letterSpacing: "3px", color: "#C2A882", textTransform: "uppercase", marginBottom: "20px" },
   heroTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: "600", color: "#FFFFFF", lineHeight: "1.2", marginBottom: "20px" },
   heroSubtitle: { fontSize: "15px", color: "#D4C5B0", lineHeight: "1.7", marginBottom: "32px", maxWidth: "500px", margin: "0 auto 32px" },
@@ -1529,63 +1230,24 @@ const styles = {
   sectionSubtitle: { fontSize: "14px", color: "#888888", maxWidth: "500px", margin: "0 auto" },
   productGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "24px" },
   viewAllContainer: { textAlign: "center", marginTop: "48px" },
-  viewAllButton: { padding: "12px 32px", backgroundColor: "transparent", color: "#C2552A", border: "2px solid #C2552A", borderRadius: "40px", fontSize: "13px", fontWeight: "600", cursor: "pointer" },
-  footer: { backgroundColor: "#2D1B0E", padding: "48px 20px", textAlign: "center" },
-  footerContent: { maxWidth: "600px", margin: "0 auto" },
-  footerLogo: { fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontWeight: "600", color: "#FFFFFF", letterSpacing: "2px", marginBottom: "12px" },
-  footerTagline: { fontSize: "12px", color: "#C2A882", marginBottom: "16px" },
-  footerCopyright: { fontSize: "11px", color: "#666666" },
-  shopPage: { padding: "48px 5%" },
+  viewAllButton: { padding: "12px 40px", backgroundColor: "#FFFFFF", color: "#C2552A", border: "2px solid #C2552A", borderRadius: "40px", fontSize: "13px", fontWeight: "600", cursor: "pointer", transition: "all 0.2s" },
+  shopPage: { padding: "40px 5%" },
+  shopContainer: { maxWidth: "1200px", margin: "0 auto" },
   shopHeader: { textAlign: "center", marginBottom: "40px" },
   shopTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "36px", fontWeight: "600", color: "#2D1B0E", marginBottom: "8px" },
   shopSubtitle: { fontSize: "14px", color: "#888888" },
   categoryFilter: { display: "flex", justifyContent: "center", gap: "12px", marginBottom: "40px", flexWrap: "wrap" },
   filterButton: { padding: "8px 20px", backgroundColor: "#FFFFFF", color: "#666666", border: "1.5px solid #EEEEEE", borderRadius: "30px", fontSize: "13px", cursor: "pointer", transition: "all 0.2s" },
   filterButtonActive: { backgroundColor: "#C2552A", color: "#FFFFFF", borderColor: "#C2552A" },
-  checkoutPage: { padding: "48px 5%", minHeight: "calc(100vh - 70px)" },
-  checkoutContainer: { maxWidth: "1000px", margin: "0 auto" },
-  checkoutTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "28px", fontWeight: "600", color: "#2D1B0E", marginBottom: "8px" },
-  checkoutSubtitle: { fontSize: "13px", color: "#888888", marginBottom: "32px" },
-  checkoutGrid: { display: "grid", gridTemplateColumns: "1fr 380px", gap: "32px" },
-  checkoutForm: { backgroundColor: "#FFFFFF", padding: "24px", borderRadius: "16px", border: "1px solid #F0EDE8" },
-  formGroup: { marginBottom: "20px" },
-  formLabel: { display: "block", fontSize: "12px", fontWeight: "600", color: "#333333", marginBottom: "8px" },
-  formInput: { width: "100%", padding: "12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" },
-  formTextarea: { width: "100%", padding: "12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", resize: "vertical" },
-  paymentInfo: { backgroundColor: "#F0F7FF", padding: "14px 16px", borderRadius: "10px", marginTop: "8px" },
-  paymentInfoTitle: { fontSize: "12px", fontWeight: "600", color: "#2C5F8A", marginBottom: "6px" },
-  paymentInfoDesc: { fontSize: "11px", color: "#555555", lineHeight: "1.6" },
-  orderSummary: { backgroundColor: "#FFFFFF", padding: "24px", borderRadius: "16px", border: "1px solid #F0EDE8", height: "fit-content" },
-  summaryTitle: { fontSize: "16px", fontWeight: "600", color: "#2D1B0E", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid #F0EDE8" },
-  summaryItem: { display: "flex", justifyContent: "space-between", marginBottom: "12px" },
-  summaryItemName: { fontSize: "13px", fontWeight: "500", color: "#333333" },
-  summaryItemMeta: { fontSize: "11px", color: "#AAAAAA" },
-  summaryItemPrice: { fontSize: "13px", fontWeight: "500", color: "#C2552A" },
-  summaryDivider: { height: "1px", backgroundColor: "#F0EDE8", margin: "16px 0" },
+  cartPage: { padding: "40px 5%" },
+  cartContainer: { maxWidth: "700px", margin: "0 auto" },
+  cartTitle: { fontSize: "28px", fontWeight: "600", color: "#2D1B0E", marginBottom: "24px" },
+  cartItems: { display: "grid", gap: "16px", marginBottom: "24px" },
+  cartItem: { display: "flex", gap: "16px", padding: "16px", backgroundColor: "#F5F0E8", borderRadius: "8px", alignItems: "flex-start" },
+  cartSummary: { backgroundColor: "#F5F0E8", padding: "16px", borderRadius: "8px", marginBottom: "24px" },
   summaryRow: { display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px", color: "#666666" },
   summaryTotal: { display: "flex", justifyContent: "space-between", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #F0EDE8", fontSize: "16px", fontWeight: "700" },
   processButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "20px" },
   xenditNote: { textAlign: "center", fontSize: "11px", color: "#AAAAAA", marginTop: "10px" },
   receiptPage: { padding: "48px 5%", minHeight: "calc(100vh - 70px)", backgroundColor: "#F5F0E8" },
-  receiptContainer: { maxWidth: "500px", margin: "0 auto", backgroundColor: "#FFFFFF", borderRadius: "16px", padding: "32px" },
-  receiptHeader: { textAlign: "center", marginBottom: "24px", paddingBottom: "20px", borderBottom: "2px dashed #F0EDE8" },
-  receiptLogo: { fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontWeight: "700", color: "#2D1B0E", letterSpacing: "2px" },
-  receiptTagline: { fontSize: "10px", color: "#C2552A", letterSpacing: "2px", textTransform: "uppercase", marginTop: "4px" },
-  receiptMeta: { fontSize: "11px", color: "#AAAAAA", marginTop: "8px" },
-  receiptInfo: { backgroundColor: "#FAFAF7", padding: "16px", borderRadius: "12px", marginBottom: "24px" },
-  receiptInfoRow: { display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "12px" },
-  receiptItems: { marginBottom: "24px" },
-  receiptSectionTitle: { fontSize: "12px", fontWeight: "600", color: "#2D1B0E", marginBottom: "12px", paddingBottom: "8px", borderBottom: "1px solid #F0EDE8" },
-  receiptItem: { display: "flex", justifyContent: "space-between", marginBottom: "12px" },
-  receiptItemName: { fontSize: "13px", fontWeight: "500", color: "#333333" },
-  receiptItemMeta: { fontSize: "11px", color: "#AAAAAA" },
-  receiptItemPrice: { fontSize: "13px", fontWeight: "500", color: "#C2552A" },
-  receiptTotals: { borderTop: "1px solid #F0EDE8", paddingTop: "16px", marginBottom: "24px" },
-  receiptRow: { display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px", color: "#666666" },
-  receiptGrandTotal: { display: "flex", justifyContent: "space-between", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #F0EDE8", fontSize: "16px", fontWeight: "700" },
-  receiptAddress: { backgroundColor: "#FAFAF7", padding: "16px", borderRadius: "12px", marginBottom: "24px" },
-  receiptAddressTitle: { fontSize: "12px", fontWeight: "600", color: "#2D1B0E", marginBottom: "8px" },
-  receiptNote: { marginTop: "8px", fontStyle: "italic", color: "#888888" },
-  receiptFooter: { textAlign: "center", paddingTop: "20px", borderTop: "2px dashed #F0EDE8", fontSize: "11px", color: "#AAAAAA", lineHeight: "1.6", marginBottom: "24px" },
-  receiptCloseButton: { width: "100%", padding: "12px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer" },
 };
