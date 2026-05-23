@@ -53,7 +53,7 @@ const PRODUCTS = [
     category: "Aksesoris",
     price: 9000,
     stock: 20,
-    desc: "ikat rambut handmade karya mahasiswa kewirausahaan."
+    desc: "ikat rambut handmade karya mahasiswa kewirausahaan.",
     color: "#7B3D8C",
     badge: "Limited",
     images: ["/ikat-rambut-perca.jpeg"],
