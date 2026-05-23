@@ -62,7 +62,7 @@ const PRODUCTS = [
 ];
 
 // =====================================================================
-// ANIMATION
+// ANIMATION VARIANTS
 // =====================================================================
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -328,7 +328,8 @@ export default function RekainStore() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [cart, setCart] = useState([]);
   const [ratings, setRatings] = useState({});
-  const [reviewForm, setReviewForm] = useState({ submitted: false, name: "", rating: 0, loading: false });
+  // ✅ FIX: Hapus field name, hanya rating + status
+  const [reviewForm, setReviewForm] = useState({ submitted: false, rating: 0, loading: false });
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [cartSize, setCartSize] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -355,42 +356,72 @@ export default function RekainStore() {
   }, []);
 
   // ---- Supabase: submit review ----
+  // ✅ FIX: Tidak ada reviewer_name, product_id sebagai int, anonymous
   const submitReview = async (product) => {
-    if (reviewForm.rating === 0) { alert("Silakan pilih bintang rating"); return; }
+    if (reviewForm.rating === 0) {
+      alert("Silakan pilih bintang rating");
+      return;
+    }
     setReviewForm((prev) => ({ ...prev, loading: true }));
+
     const { error } = await supabase.from("reviews").insert({
-      product_id: product.id,
-      reviewer_name: reviewForm.name.trim() || "Anonim",
-      rating: reviewForm.rating,
+      product_id: product.id,        // int (1,2,3,4)
+      rating: reviewForm.rating,     // anonymous, tidak ada nama
     });
-    if (error) { alert("Gagal mengirim review."); setReviewForm((prev) => ({ ...prev, loading: false })); return; }
-    const { data } = await supabase.from("reviews").select("product_id, rating").eq("product_id", product.id);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      alert("Gagal mengirim review: " + error.message);
+      setReviewForm((prev) => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Refresh rating untuk produk ini
+    const { data } = await supabase
+      .from("reviews")
+      .select("product_id, rating")
+      .eq("product_id", product.id);
+
     if (data) {
       const total = data.reduce((s, r) => s + r.rating, 0);
-      setRatings((prev) => ({ ...prev, [product.id]: { average: total / data.length, count: data.length } }));
+      setRatings((prev) => ({
+        ...prev,
+        [product.id]: { average: total / data.length, count: data.length },
+      }));
     }
-    setReviewForm({ name: "", rating: 0, submitted: true, loading: false });
+
+    setReviewForm({ rating: 0, submitted: true, loading: false });
   };
 
   // ---- Cart ----
   const addToCart = (product, size) => {
-    // Produk tanpa ukuran (aksesoris) tidak perlu pilih size
     const hasSizes = product.sizes && product.sizes.length > 0;
     if (hasSizes && !size) { alert("Silakan pilih ukuran"); return; }
     const effectiveSize = hasSizes ? size : "One Size";
     const cartKey = `${product.id}-${effectiveSize}`;
     const existing = cart.find((item) => item.cartKey === cartKey);
     if (existing) {
-      setCart((prev) => prev.map((item) => item.cartKey === cartKey ? { ...item, quantity: item.quantity + 1 } : item));
+      setCart((prev) =>
+        prev.map((item) =>
+          item.cartKey === cartKey ? { ...item, quantity: item.quantity + 1 } : item
+        )
+      );
     } else {
-      setCart([...cart, { cartKey, id: product.id, name: product.name, price: product.price, size: effectiveSize, quantity: 1, images: product.images, color: product.color }]);
+      setCart([...cart, {
+        cartKey, id: product.id, name: product.name, price: product.price,
+        size: effectiveSize, quantity: 1, images: product.images, color: product.color,
+      }]);
     }
     setSelectedProduct(null);
     setCartSize(null);
   };
 
   const updateQuantity = (cartKey, delta) => {
-    setCart((prev) => prev.map((item) => item.cartKey === cartKey ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item));
+    setCart((prev) =>
+      prev.map((item) =>
+        item.cartKey === cartKey ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+      )
+    );
   };
 
   const removeFromCart = (cartKey) => setCart((prev) => prev.filter((item) => item.cartKey !== cartKey));
@@ -415,7 +446,11 @@ export default function RekainStore() {
           orderId,
           customerName: customerForm.name,
           customerEmail: `${customerForm.phone}@rekain.com`,
-          items: cart.map((item) => ({ name: `${item.name} (${item.size})`, qty: item.quantity, price: item.price })),
+          items: cart.map((item) => ({
+            name: `${item.name} (${item.size})`,
+            qty: item.quantity,
+            price: item.price,
+          })),
           total: grandTotal,
         }),
       });
@@ -455,7 +490,9 @@ export default function RekainStore() {
         </div>
         <motion.button style={styles.cartButton} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} onClick={() => setCurrentPage("cart")}>
           &#128722;
-          {cart.length > 0 && <span style={styles.cartBadge}>{cart.reduce((s, i) => s + i.quantity, 0)}</span>}
+          {cart.length > 0 && (
+            <span style={styles.cartBadge}>{cart.reduce((s, i) => s + i.quantity, 0)}</span>
+          )}
         </motion.button>
       </motion.nav>
 
@@ -502,7 +539,16 @@ export default function RekainStore() {
             </ScrollReveal>
             <motion.div style={styles.productGrid} variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true }}>
               {PRODUCTS.slice(0, 3).map((product) => (
-                <ProductCard key={product.id} product={product} onSelect={(p) => { setSelectedProduct(p); setReviewForm({ name: "", rating: 0, submitted: false, loading: false }); setCartSize(null); }} rating={ratings[product.id]} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onSelect={(p) => {
+                    setSelectedProduct(p);
+                    setReviewForm({ rating: 0, submitted: false, loading: false });
+                    setCartSize(null);
+                  }}
+                  rating={ratings[product.id]}
+                />
               ))}
             </motion.div>
             <div style={styles.viewAllContainer}>
@@ -532,9 +578,16 @@ export default function RekainStore() {
             </div>
             <motion.div style={styles.productGrid} variants={staggerContainer} initial="hidden" animate="visible">
               {PRODUCTS.map((product) => (
-                <ProductCard key={product.id} product={product}
-                  onSelect={(p) => { setSelectedProduct(p); setReviewForm({ name: "", rating: 0, submitted: false, loading: false }); setCartSize(null); }}
-                  rating={ratings[product.id]} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onSelect={(p) => {
+                    setSelectedProduct(p);
+                    setReviewForm({ rating: 0, submitted: false, loading: false });
+                    setCartSize(null);
+                  }}
+                  rating={ratings[product.id]}
+                />
               ))}
             </motion.div>
           </div>
@@ -586,7 +639,10 @@ export default function RekainStore() {
                 <div style={styles.cartSummary}>
                   <div style={styles.summaryRow}><span>Subtotal</span><span>Rp {cartTotal.toLocaleString("id-ID")}</span></div>
                   <div style={styles.summaryRow}><span>Ongkir</span><span>Rp {shippingCost.toLocaleString("id-ID")}</span></div>
-                  <div style={styles.summaryTotal}><span>Total</span><span style={{ color: "#C2552A" }}>Rp {grandTotal.toLocaleString("id-ID")}</span></div>
+                  <div style={styles.summaryTotal}>
+                    <span>Total</span>
+                    <span style={{ color: "#C2552A" }}>Rp {grandTotal.toLocaleString("id-ID")}</span>
+                  </div>
                 </div>
                 <motion.button style={styles.processButton} whileHover={{ backgroundColor: "#A04420" }} whileTap={{ scale: 0.98 }} onClick={() => setCurrentPage("checkout")}>
                   Lanjut ke Pembayaran
@@ -646,7 +702,10 @@ export default function RekainStore() {
               <div style={{ borderTop: "1px solid #F0EDE8", paddingTop: "12px", marginTop: "12px" }}>
                 <div style={styles.summaryRow}><span>Subtotal</span><span>Rp {cartTotal.toLocaleString("id-ID")}</span></div>
                 <div style={styles.summaryRow}><span>Ongkir</span><span>Rp {shippingCost.toLocaleString("id-ID")}</span></div>
-                <div style={styles.summaryTotal}><span>Total</span><span style={{ color: "#C2552A" }}>Rp {grandTotal.toLocaleString("id-ID")}</span></div>
+                <div style={styles.summaryTotal}>
+                  <span>Total</span>
+                  <span style={{ color: "#C2552A" }}>Rp {grandTotal.toLocaleString("id-ID")}</span>
+                </div>
               </div>
               <motion.button style={styles.processButton} whileHover={{ backgroundColor: "#A04420" }} whileTap={{ scale: 0.98 }}
                 onClick={processPayment} disabled={isProcessing}>
@@ -665,11 +724,16 @@ export default function RekainStore() {
 
       {/* PRODUCT DETAIL MODAL */}
       {selectedProduct && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999, padding: "20px" }}
-          onClick={() => setSelectedProduct(null)}>
-          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        <div
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 999, padding: "20px" }}
+          onClick={() => setSelectedProduct(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
             onClick={(e) => e.stopPropagation()}
-            style={{ backgroundColor: "#FFFFFF", borderRadius: "12px", overflow: "auto", maxHeight: "90vh", maxWidth: "600px", width: "100%", position: "relative" }}>
+            style={{ backgroundColor: "#FFFFFF", borderRadius: "12px", overflow: "auto", maxHeight: "90vh", maxWidth: "600px", width: "100%", position: "relative" }}
+          >
             <div style={{ height: "350px", backgroundColor: selectedProduct.color, position: "relative", overflow: "hidden" }}>
               {selectedProduct.images && selectedProduct.images.length > 0 ? (
                 <img src={selectedProduct.images[0]} alt={selectedProduct.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -679,26 +743,33 @@ export default function RekainStore() {
                 </div>
               )}
             </div>
-            <button onClick={() => setSelectedProduct(null)}
-              style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: "36px", height: "36px", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>
+            <button
+              onClick={() => setSelectedProduct(null)}
+              style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: "36px", height: "36px", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}
+            >
               &#10005;
             </button>
+
             <div style={{ padding: "24px" }}>
               <p style={{ fontSize: "11px", color: "#C2552A", fontWeight: "600", letterSpacing: "1px", margin: 0 }}>{selectedProduct.category}</p>
               <h1 style={{ fontSize: "24px", fontWeight: "600", color: "#2D1B0E", margin: "8px 0" }}>{selectedProduct.name}</h1>
+
               {ratings[selectedProduct.id] && ratings[selectedProduct.id].count > 0 && (
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                   <SparkleRating value={Math.round(ratings[selectedProduct.id].average)} size={14} />
-                  <span style={{ fontSize: "12px", color: "#A08060" }}>{ratings[selectedProduct.id].average.toFixed(1)} dari {ratings[selectedProduct.id].count} ulasan</span>
+                  <span style={{ fontSize: "12px", color: "#A08060" }}>
+                    {ratings[selectedProduct.id].average.toFixed(1)} dari {ratings[selectedProduct.id].count} ulasan
+                  </span>
                 </div>
               )}
+
               <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "16px" }}>
                 <span style={{ fontSize: "26px", fontWeight: "700", color: "#C2552A" }}>Rp {selectedProduct.price.toLocaleString("id-ID")}</span>
                 <span style={{ fontSize: "13px", color: "#A08060" }}>{selectedProduct.stock} stok tersedia</span>
               </div>
+
               <p style={{ fontSize: "13px", color: "#666666", lineHeight: "1.6", marginBottom: "20px" }}>{selectedProduct.desc}</p>
 
-              {/* Hanya tampilkan pilih ukuran jika produk punya sizes */}
               {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
                 <div style={{ marginBottom: "20px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
@@ -718,29 +789,63 @@ export default function RekainStore() {
                 </div>
               )}
 
-              <motion.button style={styles.processButton} whileHover={{ backgroundColor: "#A04420" }} whileTap={{ scale: 0.98 }} onClick={() => addToCart(selectedProduct, cartSize)}>
+              <motion.button
+                style={styles.processButton}
+                whileHover={{ backgroundColor: "#A04420" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => addToCart(selectedProduct, cartSize)}
+              >
                 Masukkan Keranjang
               </motion.button>
 
-              {/* Review */}
+              {/* ✅ REVIEW SECTION — anonymous, no name field */}
               <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #F0EDE8" }}>
-                <p style={{ fontSize: "12px", fontWeight: "600", color: "#2D1B0E", marginBottom: "12px", letterSpacing: "0.5px" }}>BERI PENILAIAN</p>
+                <p style={{ fontSize: "12px", fontWeight: "600", color: "#2D1B0E", marginBottom: "12px", letterSpacing: "0.5px" }}>
+                  BERI PENILAIAN
+                </p>
+
                 {reviewForm.submitted ? (
-                  <p style={{ fontSize: "13px", color: "#4A7C59" }}>Terima kasih atas penilaianmu!</p>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", backgroundColor: "#F0FFF4", borderRadius: "8px", border: "1px solid #C6F6D5" }}
+                  >
+                    <span style={{ fontSize: "18px" }}>&#10003;</span>
+                    <p style={{ fontSize: "13px", color: "#276749", margin: 0 }}>Terima kasih atas penilaianmu!</p>
+                  </motion.div>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <input type="text" placeholder="Nama kamu" value={reviewForm.name}
-                      onChange={(e) => setReviewForm((prev) => ({ ...prev, name: e.target.value }))}
-                      style={{ padding: "10px 12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", outline: "none" }} />
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <SparkleRating value={reviewForm.rating} size={20} interactive onChange={(val) => setReviewForm((prev) => ({ ...prev, rating: val }))} />
-                      <span style={{ fontSize: "12px", color: "#A08060" }}>
-                        {reviewForm.rating > 0 ? ["", "Buruk", "Kurang", "Cukup", "Bagus", "Sempurna"][reviewForm.rating] : "Pilih rating"}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <SparkleRating
+                        value={reviewForm.rating}
+                        size={24}
+                        interactive
+                        onChange={(val) => setReviewForm((prev) => ({ ...prev, rating: val }))}
+                      />
+                      <span style={{ fontSize: "13px", color: "#A08060" }}>
+                        {reviewForm.rating > 0
+                          ? ["", "Buruk", "Kurang", "Cukup", "Bagus", "Sempurna"][reviewForm.rating]
+                          : "Pilih rating"}
                       </span>
                     </div>
-                    <motion.button whileHover={{ backgroundColor: "#7A5038" }} whileTap={{ scale: 0.98 }}
-                      onClick={() => submitReview(selectedProduct)} disabled={reviewForm.loading}
-                      style={{ padding: "10px", backgroundColor: "#4A2A1A", color: "#F5EFE6", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
+
+                    <motion.button
+                      whileHover={{ backgroundColor: "#7A5038" }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => submitReview(selectedProduct)}
+                      disabled={reviewForm.loading || reviewForm.rating === 0}
+                      style={{
+                        padding: "10px",
+                        backgroundColor: reviewForm.rating === 0 ? "#D0B89A" : "#4A2A1A",
+                        color: "#F5EFE6",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                        fontWeight: "600",
+                        cursor: reviewForm.rating === 0 ? "not-allowed" : "pointer",
+                        transition: "background-color 0.2s",
+                      }}
+                    >
                       {reviewForm.loading ? "Mengirim..." : "Kirim Penilaian"}
                     </motion.button>
                   </div>
