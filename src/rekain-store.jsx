@@ -1,5 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import { createClient } from "@supabase/supabase-js";
+
+/* ============================================================
+   SUPABASE CLIENT
+   Tambahkan di .env:
+   VITE_SUPABASE_URL=https://xxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+============================================================ */
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 /* ============================================================
    DATA PRODUK
@@ -179,10 +191,48 @@ function ScrollReveal({ children, delay = 0, className = "" }) {
   );
 }
 
+
+/* ============================================================
+   SPARKLE RATING COMPONENT
+============================================================ */
+function Sparkle({ filled, size = 12 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: "block" }}>
+      <path
+        d="M12 2 L13.8 10.2 L22 12 L13.8 13.8 L12 22 L10.2 13.8 L2 12 L10.2 10.2 Z"
+        fill={filled ? "#C2552A" : "none"}
+        stroke={filled ? "#C2552A" : "#C8B49A"}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SparkleRating({ value = 0, max = 5, size = 12, interactive = false, onChange }) {
+  const [hovered, setHovered] = useState(0);
+  const display = interactive ? (hovered || value) : value;
+  return (
+    <div style={{ display: "flex", gap: "3px", alignItems: "center" }}>
+      {Array.from({ length: max }).map((_, i) => (
+        <span
+          key={i}
+          style={{ cursor: interactive ? "pointer" : "default", lineHeight: 1 }}
+          onMouseEnter={() => interactive && setHovered(i + 1)}
+          onMouseLeave={() => interactive && setHovered(0)}
+          onClick={() => interactive && onChange && onChange(i + 1)}
+        >
+          <Sparkle filled={i < display} size={size} />
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /* ============================================================
    PRODUCT CARD COMPONENT — dengan image slider
 ============================================================ */
-function ProductCard({ product, onSelect }) {
+function ProductCard({ product, onSelect, rating }) {
   const [slide, setSlide] = useState(0);
   const hasImages = product.images && product.images.length > 0;
 
@@ -376,6 +426,15 @@ function ProductCard({ product, onSelect }) {
         >
           {product.desc.length > 80 ? product.desc.slice(0, 80) + "..." : product.desc}
         </p>
+        {/* Rating */}
+        {rating && rating.count > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" }}>
+            <SparkleRating value={Math.round(rating.average)} size={11} />
+            <span style={{ fontSize: "11px", color: "#A08060" }}>
+              {rating.average.toFixed(1)} ({rating.count})
+            </span>
+          </div>
+        )}
         <div
           style={{
             display: "flex",
@@ -491,12 +550,70 @@ export default function RekainStore() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderData, setOrderData] = useState(null);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
+  const [ratings, setRatings] = useState({}); // { [productId]: { average, count } }
+  const [reviewForm, setReviewForm] = useState({ name: "", rating: 0, submitted: false, loading: false });
   const [customerForm, setCustomerForm] = useState({
     name: "",
     phone: "",
     address: "",
     note: "",
   });
+
+  /* ---------- SUPABASE: fetch ratings ---------- */
+  useEffect(() => {
+    const fetchRatings = async () => {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("product_id, rating");
+      if (error || !data) return;
+
+      const map = {};
+      data.forEach(({ product_id, rating }) => {
+        if (!map[product_id]) map[product_id] = { total: 0, count: 0 };
+        map[product_id].total += rating;
+        map[product_id].count += 1;
+      });
+
+      const result = {};
+      Object.entries(map).forEach(([id, { total, count }]) => {
+        result[id] = { average: total / count, count };
+      });
+      setRatings(result);
+    };
+    fetchRatings();
+  }, []);
+
+  /* ---------- SUPABASE: submit review ---------- */
+  const submitReview = async (product) => {
+    if (!reviewForm.name.trim() || reviewForm.rating === 0) {
+      alert("Isi nama dan pilih rating dulu ya.");
+      return;
+    }
+    setReviewForm((prev) => ({ ...prev, loading: true }));
+    const { error } = await supabase.from("reviews").insert({
+      product_id: product.id,
+      reviewer_name: reviewForm.name.trim(),
+      rating: reviewForm.rating,
+    });
+    if (error) {
+      alert("Gagal mengirim review. Coba lagi.");
+      setReviewForm((prev) => ({ ...prev, loading: false }));
+      return;
+    }
+    // Refresh ratings
+    const { data } = await supabase
+      .from("reviews")
+      .select("product_id, rating")
+      .eq("product_id", product.id);
+    if (data) {
+      const total = data.reduce((s, r) => s + r.rating, 0);
+      setRatings((prev) => ({
+        ...prev,
+        [product.id]: { average: total / data.length, count: data.length },
+      }));
+    }
+    setReviewForm({ name: "", rating: 0, submitted: true, loading: false });
+  };
 
   const categories = ["all", "Kemeja", "Gaun", "Set"];
   const filteredProducts =
@@ -876,6 +993,59 @@ export default function RekainStore() {
                 >
                   Tambah ke Keranjang
                 </motion.button>
+
+                {/* ── REVIEW SECTION ── */}
+                <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #F0EDE8" }}>
+                  <p style={{ fontSize: "12px", fontWeight: "600", color: "#2D1B0E", marginBottom: "12px", letterSpacing: "0.5px" }}>
+                    BERI PENILAIAN
+                  </p>
+
+                  {/* Show existing rating */}
+                  {ratings[selectedProduct.id] && ratings[selectedProduct.id].count > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                      <SparkleRating value={Math.round(ratings[selectedProduct.id].average)} size={14} />
+                      <span style={{ fontSize: "12px", color: "#A08060" }}>
+                        {ratings[selectedProduct.id].average.toFixed(1)} dari {ratings[selectedProduct.id].count} ulasan
+                      </span>
+                    </div>
+                  )}
+
+                  {reviewForm.submitted ? (
+                    <p style={{ fontSize: "13px", color: "#4A7C59", fontStyle: "italic" }}>
+                      ✦ Terima kasih atas penilaianmu!
+                    </p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <input
+                        type="text"
+                        placeholder="Nama kamu"
+                        value={reviewForm.name}
+                        onChange={(e) => setReviewForm((prev) => ({ ...prev, name: e.target.value }))}
+                        style={{ padding: "10px 12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", outline: "none" }}
+                      />
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <SparkleRating
+                          value={reviewForm.rating}
+                          size={20}
+                          interactive
+                          onChange={(val) => setReviewForm((prev) => ({ ...prev, rating: val }))}
+                        />
+                        <span style={{ fontSize: "12px", color: "#A08060" }}>
+                          {reviewForm.rating > 0 ? ["", "Buruk", "Kurang", "Cukup", "Bagus", "Sempurna"][reviewForm.rating] : "Pilih rating"}
+                        </span>
+                      </div>
+                      <motion.button
+                        whileHover={{ backgroundColor: "#7A5038" }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => submitReview(selectedProduct)}
+                        disabled={reviewForm.loading}
+                        style={{ padding: "10px", backgroundColor: "#4A2A1A", color: "#F5EFE6", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer", letterSpacing: "0.5px" }}
+                      >
+                        {reviewForm.loading ? "Mengirim..." : "Kirim Penilaian ✦"}
+                      </motion.button>
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -927,40 +1097,22 @@ export default function RekainStore() {
             <section style={styles.heroSection}>
               <div style={styles.heroOverlay} />
               <div style={styles.heroContent}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <span style={styles.heroBadge}>Sustainable Fashion</span>
-                </motion.div>
-                <motion.h1
-                  style={styles.heroTitle}
-                  initial={{ opacity: 0, y: 30 }}
+                <motion.p
+                  style={styles.heroBadge}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  Kain yang Hampir Terbuang,
-                  <br />
-                  Kini Menjadi Pakaian Kesayangan
-                </motion.h1>
-                <motion.p
-                  style={styles.heroSubtitle}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  Kami percaya setiap kain punya cerita. Rekain hadir untuk melanjutkan
-                  cerita itu menjadi pakaian anak yang nyaman dan ramah lingkungan.
+                  Tenunan kain perca, menautkan cerita.
                 </motion.p>
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
                   <motion.button
                     style={styles.heroButton}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, backgroundColor: "#A04420" }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setCurrentPage("shop")}
                   >
@@ -1004,7 +1156,7 @@ export default function RekainStore() {
                 viewport={{ once: true }}
               >
                 {PRODUCTS.slice(0, 3).map((product) => (
-                  <ProductCard key={product.id} product={product} onSelect={setSelectedProduct} />
+                  <ProductCard key={product.id} product={product} onSelect={(p) => { setSelectedProduct(p); setReviewForm({ name: "", rating: 0, submitted: false, loading: false }); }} rating={ratings[product.id]} />
                 ))}
               </motion.div>
 
@@ -1067,7 +1219,7 @@ export default function RekainStore() {
               key={categoryFilter}
             >
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} onSelect={setSelectedProduct} />
+                <ProductCard key={product.id} product={product} onSelect={(p) => { setSelectedProduct(p); setReviewForm({ name: "", rating: 0, submitted: false, loading: false }); }} rating={ratings[product.id]} />
               ))}
             </motion.div>
           </motion.div>
@@ -1356,8 +1508,10 @@ const styles = {
   loadingOverlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.9)", zIndex: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" },
   loadingSpinner: { width: "40px", height: "40px", border: "3px solid #F0EDE8", borderTopColor: "#C2552A", borderRadius: "50%" },
   loadingText: { fontSize: "14px", color: "#666666" },
-  heroSection: { position: "relative", minHeight: "560px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", backgroundImage: "url('/rekain-hero.jpeg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" },
-  heroOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(28, 14, 4, 0.62)" },
+  heroSection: { position: "relative", minHeight: "560px", display: "flex", alignItems: "flex-end", justifyContent: "center", textAlign: "center", backgroundImage: "url('/rekain-hero.jpeg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" },
+  heroOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(to top, rgba(20,10,2,0.80) 0%, rgba(20,10,2,0.15) 60%, transparent 100%)" },
+  heroContent: { position: "relative", padding: "48px 20px", maxWidth: "600px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" },
+  heroBadge: { fontSize: "14px", letterSpacing: "2px", color: "#E8D5B7", fontStyle: "italic", margin: 0 },
   heroContent: { position: "relative", padding: "60px 20px", maxWidth: "700px", margin: "0 auto" },
   heroBadge: { display: "inline-block", fontSize: "11px", letterSpacing: "3px", color: "#C2A882", textTransform: "uppercase", marginBottom: "20px" },
   heroTitle: { fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(32px, 5vw, 48px)", fontWeight: "600", color: "#FFFFFF", lineHeight: "1.2", marginBottom: "20px" },
