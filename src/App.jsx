@@ -1,13 +1,7 @@
-import Home from "./pages/Home";
-import RekainChatbot from "./components/RekainChatbot";
+import RekainStore from "./rekain-store";
 
 function App() {
-  return (
-    <>
-      <Home />
-      <RekainChatbot />
-    </>
-  );
+  return <RekainStore />;
 }
 
 export default App;
