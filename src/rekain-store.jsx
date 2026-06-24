@@ -283,7 +283,7 @@ function SizeGuideModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }} onClick={onClose}>
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -461,6 +461,42 @@ export default function RekainStore() {
     } catch (err) {
       alert("Gagal memproses pembayaran: " + err.message);
       setIsProcessing(false);
+    }
+  };
+
+  // ---- Create BRI VA ----
+  const createBRIVA = async () => {
+    if (!customerForm.name || !customerForm.phone || !customerForm.address) {
+      alert("Mohon lengkapi data pengiriman.");
+      return;
+    }
+
+    try {
+      const orderId = "RKN-" + Date.now();
+
+      const res = await fetch("/api/create-bri-va", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId,
+          customerName: customerForm.name,
+          customerEmail: `${customerForm.phone}@rekain.com`,
+          total: grandTotal,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.vaNumber) {
+        throw new Error(data.error);
+      }
+
+      setVaData(data);
+
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -715,7 +751,48 @@ export default function RekainStore() {
               <p style={{ textAlign: "center", fontSize: "11px", color: "#AAAAAA", marginTop: "10px" }}>
                 &#128274; Pembayaran aman diproses oleh Xendit
               </p>
-              <button onClick={() => setCurrentPage("cart")} style={{ width: "100%", marginTop: "10px", padding: "12px", backgroundColor: "transparent", border: "1px solid #DDDDDD", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "#333333" }}>
+              <button
+                onClick={createBRIVA}
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  backgroundColor: "#00529B",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  marginTop: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                Bayar via VA BRI
+              </button>
+              {vaData && (
+                <div
+                  style={{
+                    marginTop: "20px",
+                    padding: "16px",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    background: "#f9f9f9",
+                  }}
+                >
+                  <h3>Virtual Account BRI</h3>
+
+                  <p>
+                    Nomor VA:
+                    <strong> {vaData.vaNumber}</strong>
+                  </p>
+
+                  <p>
+                    Total:
+                    <strong>
+                      {" "}
+                      Rp {grandTotal.toLocaleString("id-ID")}
+                    </strong>
+                  </p>
+                </div>
+              )}
+              <button onClick={() => setCurrentPage("cart")} style={{ width: "100%", marginTop: "10px", padding: "12px", backgroundColor: "transparent", border: "1px solid #DDDDDD", borderRadius: "8px", color: "#666666", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
                 Kembali ke Keranjang
               </button>
             </div>
@@ -782,7 +859,7 @@ export default function RekainStore() {
                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                     {selectedProduct.sizes.map((size) => (
                       <button key={size} onClick={() => setCartSize(size)}
-                        style={{ padding: "10px 16px", backgroundColor: cartSize === size ? "#C2552A" : "#F5F0E8", color: cartSize === size ? "#FFFFFF" : "#2D1B0E", border: "1px solid #EEEEEE", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "500" }}>
+                        style={{ padding: "10px 16px", backgroundColor: cartSize === size ? "#C2552A" : "#F5F0E8", color: cartSize === size ? "#FFFFFF" : "#2D1B0E", border: "1px solid #EEEEEE", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: "500" }}>
                         {size}
                       </button>
                     ))}
@@ -868,7 +945,7 @@ export default function RekainStore() {
 // =====================================================================
 const styles = {
   appContainer: { minHeight: "100vh", backgroundColor: "#FAFAF7" },
-  navbar: { padding: "16px 40px", backgroundColor: "#FFFFFF", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #F0EDE8", position: "sticky", top: 0, zIndex: 100 },
+  navbar: { padding: "16px 40px", backgroundColor: "#FFFFFF", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #F0EDE8", position: "sticky", top: 0, zIndex: 900 },
   logoArea: { cursor: "pointer", display: "flex", flexDirection: "column", gap: 0 },
   logo: { fontSize: "20px", fontWeight: "700", color: "#2D1B0E", fontFamily: "'Cormorant Garamond', serif", margin: 0 },
   logoSub: { fontSize: "10px", color: "#C2552A", fontWeight: "600", letterSpacing: "2px" },
@@ -913,7 +990,7 @@ const styles = {
   cartSummary: { backgroundColor: "#F5F0E8", padding: "16px", borderRadius: "8px", marginBottom: "24px" },
   summaryRow: { display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px", color: "#666666" },
   summaryTotal: { display: "flex", justifyContent: "space-between", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #F0EDE8", fontSize: "16px", fontWeight: "700" },
-  processButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "16px" },
+  processButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginBottom: "12px" },
   qtyBtn: { width: "28px", height: "28px", backgroundColor: "#FFFFFF", border: "1px solid #DDDDDD", borderRadius: "6px", cursor: "pointer", fontSize: "14px" },
   formLabel: { display: "block", fontSize: "12px", fontWeight: "600", color: "#333333", marginBottom: "6px" },
   formInput: { width: "100%", padding: "12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", outline: "none", resize: "vertical" },
