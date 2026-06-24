@@ -47,6 +47,7 @@ export default async function handler(req, res) {
       vaNumber: va.account_number,
       bank: "BRI",
       externalId: va.external_id,
+      amount: total,
     });
 
   } catch (err) {
