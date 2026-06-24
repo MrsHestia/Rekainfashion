@@ -762,6 +762,8 @@ export default function RekainStore() {
                   borderRadius: "8px",
                   marginTop: "10px",
                   cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "13px",
                 }}
               >
                 Bayar via VA BRI
@@ -776,7 +778,14 @@ export default function RekainStore() {
                     background: "#f9f9f9",
                   }}
                 >
-                  <h3>Virtual Account BRI</h3>
+                  <h3 style={{ marginBottom: "12px" }}>
+                    Virtual Account BRI
+                  </h3>
+
+                  <p>
+                    Bank:
+                    <strong> {vaData.bank}</strong>
+                  </p>
 
                   <p>
                     Nomor VA:
@@ -784,12 +793,28 @@ export default function RekainStore() {
                   </p>
 
                   <p>
-                    Total:
+                    External ID:
+                    <strong> {vaData.externalId}</strong>
+                  </p>
+
+                  <p>
+                    Total Bayar:
                     <strong>
                       {" "}
-                      Rp {grandTotal.toLocaleString("id-ID")}
+                      Rp {vaData.amount.toLocaleString("id-ID")}
                     </strong>
                   </p>
+
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      padding: "10px",
+                      background: "#FFF8E1",
+                      borderRadius: "6px",
+                    }}
+                  >
+                    Transfer tepat sesuai nominal agar pembayaran otomatis terverifikasi.
+                  </div>
                 </div>
               )}
               <button onClick={() => setCurrentPage("cart")} style={{ width: "100%", marginTop: "10px", padding: "12px", backgroundColor: "transparent", border: "1px solid #DDDDDD", borderRadius: "8px", color: "#666666", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
