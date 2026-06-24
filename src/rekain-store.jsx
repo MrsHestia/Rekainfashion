@@ -283,7 +283,7 @@ function SizeGuideModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }} onClick={onClose}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -334,6 +334,7 @@ export default function RekainStore() {
   const [cartSize, setCartSize] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [customerForm, setCustomerForm] = useState({ name: "", phone: "", address: "", note: "" });
+  const [vaData, setVaData] = useState(null);
 
   // ---- Supabase: fetch ratings ----
   useEffect(() => {
@@ -714,7 +715,7 @@ export default function RekainStore() {
               <p style={{ textAlign: "center", fontSize: "11px", color: "#AAAAAA", marginTop: "10px" }}>
                 &#128274; Pembayaran aman diproses oleh Xendit
               </p>
-              <button onClick={() => setCurrentPage("cart")} style={{ width: "100%", marginTop: "10px", padding: "12px", backgroundColor: "transparent", border: "1px solid #DDDDDD", borderRadius: "8px", cursor: "pointer", fontSize: "13px", color: "#888888" }}>
+              <button onClick={() => setCurrentPage("cart")} style={{ width: "100%", marginTop: "10px", padding: "12px", backgroundColor: "transparent", border: "1px solid #DDDDDD", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "#333333" }}>
                 Kembali ke Keranjang
               </button>
             </div>
@@ -745,7 +746,7 @@ export default function RekainStore() {
             </div>
             <button
               onClick={() => setSelectedProduct(null)}
-              style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: "36px", height: "36px", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}
+              style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: "36px", height: "36px", fontSize: "18px", cursor: "pointer" }}
             >
               &#10005;
             </button>
@@ -781,7 +782,7 @@ export default function RekainStore() {
                   <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                     {selectedProduct.sizes.map((size) => (
                       <button key={size} onClick={() => setCartSize(size)}
-                        style={{ padding: "10px 16px", backgroundColor: cartSize === size ? "#C2552A" : "#F5F0E8", color: cartSize === size ? "#FFFFFF" : "#2D1B0E", border: "1px solid #EEEEEE", borderRadius: "6px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
+                        style={{ padding: "10px 16px", backgroundColor: cartSize === size ? "#C2552A" : "#F5F0E8", color: cartSize === size ? "#FFFFFF" : "#2D1B0E", border: "1px solid #EEEEEE", borderRadius: "6px", cursor: "pointer", fontSize: "12px", fontWeight: "500" }}>
                         {size}
                       </button>
                     ))}
@@ -912,7 +913,7 @@ const styles = {
   cartSummary: { backgroundColor: "#F5F0E8", padding: "16px", borderRadius: "8px", marginBottom: "24px" },
   summaryRow: { display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px", color: "#666666" },
   summaryTotal: { display: "flex", justifyContent: "space-between", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #F0EDE8", fontSize: "16px", fontWeight: "700" },
-  processButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "8px" },
+  processButton: { width: "100%", padding: "14px", backgroundColor: "#C2552A", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginTop: "16px" },
   qtyBtn: { width: "28px", height: "28px", backgroundColor: "#FFFFFF", border: "1px solid #DDDDDD", borderRadius: "6px", cursor: "pointer", fontSize: "14px" },
   formLabel: { display: "block", fontSize: "12px", fontWeight: "600", color: "#333333", marginBottom: "6px" },
   formInput: { width: "100%", padding: "12px", border: "1.5px solid #EEEEEE", borderRadius: "8px", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", outline: "none", resize: "vertical" },
