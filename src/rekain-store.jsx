@@ -334,7 +334,20 @@ export default function RekainStore() {
   const [cartSize, setCartSize] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [customerForm, setCustomerForm] = useState({ name: "", phone: "", address: "", note: "" });
-  const [vaData, setVaData] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null); // 'bank' | 'qris' | null
+  const [copied, setCopied] = useState(false);
+
+  const BANK_ACCOUNT = {
+    bank: "BRI",
+    number: "036701113789507",
+    holder: "Hestia Lestari Pangaribuan",
+  };
+
+  const copyAccountNumber = () => {
+    navigator.clipboard.writeText(BANK_ACCOUNT.number);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // ---- Supabase: fetch ratings ----
   useEffect(() => {
@@ -461,42 +474,6 @@ export default function RekainStore() {
     } catch (err) {
       alert("Gagal memproses pembayaran: " + err.message);
       setIsProcessing(false);
-    }
-  };
-
-  // ---- Create BRI VA ----
-  const createBRIVA = async () => {
-    if (!customerForm.name || !customerForm.phone || !customerForm.address) {
-      alert("Mohon lengkapi data pengiriman.");
-      return;
-    }
-
-    try {
-      const orderId = "RKN-" + Date.now();
-
-      const res = await fetch("/api/create-bri-va", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderId,
-          customerName: customerForm.name,
-          customerEmail: `${customerForm.phone}@rekain.com`,
-          total: grandTotal,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!data.vaNumber) {
-        throw new Error(data.error);
-      }
-
-      setVaData(data);
-
-    } catch (err) {
-      alert(err.message);
     }
   };
 
@@ -721,7 +698,7 @@ export default function RekainStore() {
               </div>
               <div style={{ backgroundColor: "#F0F7FF", padding: "14px", borderRadius: "10px" }}>
                 <p style={{ fontSize: "12px", fontWeight: "600", color: "#2C5F8A", marginBottom: "4px" }}>Metode Pembayaran</p>
-                <p style={{ fontSize: "11px", color: "#555555" }}>Transfer Bank (BCA, BNI, BRI, Mandiri) &middot; QRIS &middot; GoPay &middot; OVO &middot; DANA &middot; ShopeePay</p>
+                <p style={{ fontSize: "11px", color: "#555555" }}>Transfer Bank BRI &middot; QRIS (semua e-wallet & bank)</p>
               </div>
             </div>
 
@@ -751,72 +728,133 @@ export default function RekainStore() {
               <p style={{ textAlign: "center", fontSize: "11px", color: "#AAAAAA", marginTop: "10px" }}>
                 &#128274; Pembayaran aman diproses oleh Xendit
               </p>
-              <button
-                onClick={createBRIVA}
-                style={{
-                  width: "100%",
-                  padding: "14px",
-                  backgroundColor: "#00529B",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  marginTop: "10px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                  fontSize: "13px",
-                }}
-              >
-                Bayar via VA BRI
-              </button>
-              {vaData && (
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                <button
+                  onClick={() => setPaymentMethod(paymentMethod === "bank" ? null : "bank")}
+                  style={{
+                    flex: 1,
+                    padding: "14px",
+                    backgroundColor: paymentMethod === "bank" ? "#00529B" : "#FFFFFF",
+                    color: paymentMethod === "bank" ? "#fff" : "#00529B",
+                    border: "1.5px solid #00529B",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    fontSize: "13px",
+                  }}
+                >
+                  Transfer Bank BRI
+                </button>
+                <button
+                  onClick={() => setPaymentMethod(paymentMethod === "qris" ? null : "qris")}
+                  style={{
+                    flex: 1,
+                    padding: "14px",
+                    backgroundColor: paymentMethod === "qris" ? "#C2552A" : "#FFFFFF",
+                    color: paymentMethod === "qris" ? "#fff" : "#C2552A",
+                    border: "1.5px solid #C2552A",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    fontSize: "13px",
+                  }}
+                >
+                  Bayar QRIS
+                </button>
+              </div>
+
+              {paymentMethod === "bank" && (
                 <div
                   style={{
-                    marginTop: "20px",
+                    marginTop: "16px",
                     padding: "16px",
                     border: "1px solid #ddd",
                     borderRadius: "8px",
                     background: "#f9f9f9",
                   }}
                 >
-                  <h3 style={{ marginBottom: "12px" }}>
-                    Virtual Account BRI
-                  </h3>
+                  <h3 style={{ marginBottom: "12px", fontSize: "14px" }}>Transfer Bank</h3>
 
-                  <p>
-                    Bank:
-                    <strong> {vaData.bank}</strong>
+                  <p style={{ fontSize: "13px", marginBottom: "6px" }}>
+                    Bank: <strong>{BANK_ACCOUNT.bank}</strong>
                   </p>
 
-                  <p>
-                    Nomor VA:
-                    <strong> {vaData.vaNumber}</strong>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+                    <p style={{ fontSize: "13px", margin: 0 }}>
+                      No. Rekening: <strong>{BANK_ACCOUNT.number}</strong>
+                    </p>
+                    <button
+                      onClick={copyAccountNumber}
+                      style={{
+                        fontSize: "11px",
+                        padding: "4px 10px",
+                        border: "1px solid #00529B",
+                        borderRadius: "6px",
+                        background: copied ? "#00529B" : "#fff",
+                        color: copied ? "#fff" : "#00529B",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {copied ? "Tersalin!" : "Salin"}
+                    </button>
+                  </div>
+
+                  <p style={{ fontSize: "13px", marginBottom: "12px" }}>
+                    Atas Nama: <strong>{BANK_ACCOUNT.holder}</strong>
                   </p>
 
-                  <p>
-                    External ID:
-                    <strong> {vaData.externalId}</strong>
-                  </p>
-
-                  <p>
-                    Total Bayar:
-                    <strong>
-                      {" "}
-                      Rp {vaData.amount.toLocaleString("id-ID")}
-                    </strong>
+                  <p style={{ fontSize: "13px", marginBottom: "12px" }}>
+                    Total Bayar: <strong>Rp {grandTotal.toLocaleString("id-ID")}</strong>
                   </p>
 
                   <div
                     style={{
-                      marginTop: "12px",
                       padding: "10px",
                       background: "#FFF8E1",
                       borderRadius: "6px",
+                      fontSize: "12px",
                     }}
                   >
-                    Transfer tepat sesuai nominal agar pembayaran otomatis terverifikasi.
+                    Setelah transfer, kirim bukti transfer beserta nama & alamat pengiriman melalui WhatsApp agar pesanan segera diproses.
                   </div>
                 </div>
               )}
+
+              {paymentMethod === "qris" && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    padding: "16px",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    background: "#f9f9f9",
+                    textAlign: "center",
+                  }}
+                >
+                  <h3 style={{ marginBottom: "12px", fontSize: "14px" }}>Scan QRIS</h3>
+                  <img
+                    src="/qris-rekain-fashion.jpeg"
+                    alt="QRIS ReKain Fashion"
+                    style={{ maxWidth: "260px", width: "100%", borderRadius: "8px", border: "1px solid #eee" }}
+                  />
+                  <p style={{ fontSize: "13px", margin: "12px 0" }}>
+                    Total Bayar: <strong>Rp {grandTotal.toLocaleString("id-ID")}</strong>
+                  </p>
+                  <div
+                    style={{
+                      padding: "10px",
+                      background: "#FFF8E1",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      textAlign: "left",
+                    }}
+                  >
+                    Scan pakai m-banking, GoPay, OVO, DANA, atau ShopeePay, lalu masukkan nominal sesuai total. Kirim bukti bayar via WhatsApp agar pesanan segera diproses.
+                  </div>
+                </div>
+              )}
+
               <button onClick={() => setCurrentPage("cart")} style={{ width: "100%", marginTop: "10px", padding: "12px", backgroundColor: "transparent", border: "1px solid #DDDDDD", borderRadius: "8px", color: "#666666", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
                 Kembali ke Keranjang
               </button>
